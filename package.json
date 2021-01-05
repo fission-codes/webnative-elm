@@ -3,6 +3,8 @@
   "description": "Thin wrapper around webnative for Elm",
   "version": "0.1.0",
   "author": "Steven Vandevelde <icid.asset@gmail.com>",
+  "main": "src/funnel.js",
+  "browser": "src/funnel.js",
   "peerDependencies": {
     "webnative": "0.x"
   },
