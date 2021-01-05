@@ -12,6 +12,11 @@ A small wrapper for Elm, around the webnative typescript library.
 
 # QuickStart
 
+```
+elm install fission-suite/webnative-elm
+npm install webnative-elm
+```
+
 Setup the necessary ports on your Elm app.
 
 ```elm
@@ -34,8 +39,14 @@ import * as webnativeElm from "webnative-elm"
 // elmApp = Elm.Main.init()
 
 webnative
-  .initialise({ permissions: ... })
-  .then(state => webnativeElm.setup(elmApp, state.fs))
+  .initialise({
+    permissions: {
+      app: { creator: "Fission", name: "Example" }
+    }
+  })
+  .then(state => {
+    webnativeElm.setup(elmApp, state.fs)
+  })
 ```
 
 Once we have that setup, we need some Elm boilerplate.
