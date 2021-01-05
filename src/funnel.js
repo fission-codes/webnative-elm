@@ -10,16 +10,16 @@ const DEFAULT_PORT_NAMES = {
 }
 
 
-(function (root, factory) {
+;(function (root, factory) {
   if (typeof exports === "object" && typeof exports.nodeName !== "string") {
     // CommonJS
     factory(exports, require("webnative"))
   } else {
     // Browser globals
-    factory((root.commonJsStrictGlobal = {}), root.webnative)
+    factory((root.webnativeElm = {}), root.webnative)
   }
 
-}(typeof self !== "undefined" ? self : this, function (exports, b) {
+}(typeof self !== "undefined" ? self : this, function (exports, webnative) {
 
     /**
      * Setup the ports for our Elm app.
