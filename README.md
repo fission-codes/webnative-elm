@@ -1,26 +1,134 @@
-![](https://github.com/fission-suite/PROJECTNAME/raw/master/assets/logo.png?sanitize=true)
+![](https://raw.githubusercontent.com/fission-suite/kit/6a20e9af963dd000903b1c6e64f9fbb2102ba472/images/badge-solid-colored.svg)
 
-# Project Name
+# Webnative Elm
 
-[![Build Status](https://travis-ci.org/fission-suite/PROJECTNAME.svg?branch=master)](https://travis-ci.org/fission-suite/PROJECTNAME)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/fission-suite/blob/master/LICENSE)
-[![Maintainability](https://api.codeclimate.com/v1/badges/44fb6a8a0cfd88bc41ef/maintainability)](https://codeclimate.com/github/fission-suite/PROJECTNAME/maintainability)
 [![Built by FISSION](https://img.shields.io/badge/⌘-Built_by_FISSION-purple.svg)](https://fission.codes)
 [![Discord](https://img.shields.io/discord/478735028319158273.svg)](https://discord.gg/zAQBDEq)
 [![Discourse](https://img.shields.io/discourse/https/talk.fission.codes/topics)](https://talk.fission.codes)
 
-An amazing description goes here!
+A small wrapper for Elm, around the webnative typescript library.
 
-[Try it out!](https://linktoalivedemo.example.com)
+
 
 # QuickStart
 
-```shell
-# IPFS on MacOS, otherwise https://docs.ipfs.io/introduction/install/
-brew install ipfs
-brew service start ipfs
+Setup the necessary ports on your Elm app.
+
+```elm
+port module Ports exposing (..)
+
+import Webnative
+
+port webnativeRequest : Webnative.Request -> Cmd msg
+port wnfsRequest : Webnative.Request -> Cmd msg
+port wnfsResponse : (Webnative.Response -> msg) -> Sub msg
+
 ```
 
-# Table of Contents
+Then import the javascript portion of this library to connect up the ports.
 
-# How To
+```js
+import * as webnative from "webnative"
+import * as webnativeElm from "webnative-elm"
+
+// elmApp = Elm.Main.init()
+
+webnative
+  .initialise({ permissions: ... })
+  .then(state => webnativeElm.setup(elmApp, state.fs))
+```
+
+Once we have that setup, we need some Elm boilerplate.
+
+```elm
+import Webnative
+import Wnfs
+
+
+type Msg
+  = ReadWnfsFile
+  | WriteToWnfsFile
+    --
+  | GotWnfsResponse
+
+type Tag
+  = ReadHelloTxt
+  | Mutation
+
+
+base : Wnfs.Base Webnative.Response
+base =
+  Wnfs.AppData
+    { creator = "Fission"
+    , name = "Example"
+    }
+
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg model =
+  case msg of
+    ReadWnfsFile ->
+      { path = [ "hello.txt" ]
+      , tag = ReadHelloTxt
+      }
+        |> Wnfs.readUtf8 base
+        |> Ports.wnfsRequest
+        |> Tuple.pair model
+
+    WriteToWnfsFile ->
+      "👋"
+        |> Wnfs.writeUtf8 base
+          { path = [ "hello.txt" ]
+          , tag = Mutation
+          }
+        |> Ports.wnfsRequest
+        |> Tuple.pair model
+
+    --
+
+    GotWnfsResponse response ->
+      case Wnfs.decodeResponse tagFromString response of
+        Ok ( ReadHelloTxt, Wnfs.Utf8Content helloContents ) ->
+          -- Do something with content from hello.txt
+
+        Ok ( Mutation, _ ) ->
+          ( model
+          , Ports.wnfsRequest Wnfs.publish
+          )
+
+        Err errString ->
+          -- Decoding, or tag parse, error.
+
+
+-- TAG STUFF
+
+tagToString : Tag -> String
+tagToString tag =
+  case tag of
+    ReadHelloTxt -> "ReadHelloTxt"
+    Mutation -> "Mutation"
+
+tagFromString : String -> Result String Tag
+tagFromString string =
+  case string of
+    "ReadHelloTxt" -> Ok ReadHelloTxt
+    "Mutation" -> Ok Mutation
+    _ -> Err "Invalid tag"
+```
+
+
+
+# Customisation
+
+You can customise the port names by passing in a third parameter.
+
+```js
+webnativeElm.setup(elmApp, state.fs, {
+  webnative: {
+    incoming: "webnativeRequest"
+  },
+  wnfs: {
+    incoming: "wnfsRequest",
+    outgoing: "wnfsResponse"
+  }
+})
+```

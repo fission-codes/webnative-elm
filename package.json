@@ -1,0 +1,12 @@
+{
+  "name": "webnative-elm",
+  "description": "Thin wrapper around webnative for Elm",
+  "version": "0.1.0",
+  "author": "Steven Vandevelde <icid.asset@gmail.com>",
+  "peerDependencies": {
+    "webnative": "0.x"
+  },
+  "devDependencies": {
+    "webnative": "^0.21.1"
+  }
+}
