@@ -1,8 +1,8 @@
 dependencies:
   webnative: 0.21.1
+  webnative-elm: 'link:../..'
 devDependencies:
   esbuild: 0.8.30
-  webnative-elm: 'link:../..'
 lockfileVersion: 5.2
 packages:
   /@multiformats/base-x/4.0.1:
