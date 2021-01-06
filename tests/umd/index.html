@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <title></title>
+</head>
+<body>
+  <script src="https://unpkg.com/webnative@0.21.1/index.umd.js"></script>
+  <script src="../../src/funnel.js"></script>
+  <script>
+    console.log(webnativeElm)
+
+    document.body.innerHTML = typeof webnativeElm.setup === "function"
+      ? "Success"
+      : "Failed"
+  </script>
+</body>
+</html>

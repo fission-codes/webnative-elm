@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "devDependencies": {
+    "esbuild": "^0.8.30"
+  },
+  "dependencies": {
+    "webnative": "^0.21.1",
+    "webnative-elm": "file:../../"
+  },
+  "scripts": {
+    "build": "esbuild --bundle index.js --outfile=dist/index.js"
+  }
+}
