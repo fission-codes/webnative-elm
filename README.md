@@ -6,7 +6,7 @@
 [![Discord](https://img.shields.io/discord/478735028319158273.svg)](https://discord.gg/zAQBDEq)
 [![Discourse](https://img.shields.io/discourse/https/talk.fission.codes/topics)](https://talk.fission.codes)
 
-A small wrapper for Elm, around the webnative typescript library.
+A thin wrapper around webnative for Elm.
 
 
 
@@ -14,7 +14,7 @@ A small wrapper for Elm, around the webnative typescript library.
 
 ```
 elm install fission-suite/webnative-elm
-npm install webnative-elm
+npm install webnative-elm webnative
 ```
 
 Setup the necessary ports on your Elm app.
@@ -49,7 +49,7 @@ webnative
   })
 ```
 
-Once we have that setup, we need some Elm boilerplate.
+Once we have that setup, we need can write our webnative Elm code.
 
 ```elm
 import Webnative
@@ -79,7 +79,7 @@ update msg model =
   case msg of
     ReadWnfsFile ->
       { path = [ "hello.txt" ]
-      , tag = ReadHelloTxt
+      , tag = tagToString ReadHelloTxt
       }
         |> Wnfs.readUtf8 base
         |> Ports.wnfsRequest
@@ -89,7 +89,7 @@ update msg model =
       "👋"
         |> Wnfs.writeUtf8 base
           { path = [ "hello.txt" ]
-          , tag = Mutation
+          , tag = tagToString Mutation
           }
         |> Ports.wnfsRequest
         |> Tuple.pair model
@@ -110,7 +110,7 @@ update msg model =
           -- Decoding, or tag parse, error.
 
 
--- TAG STUFF
+-- TAG ENCODING/DECODING
 
 tagToString : Tag -> String
 tagToString tag =
@@ -124,6 +124,29 @@ tagFromString string =
     "ReadHelloTxt" -> Ok ReadHelloTxt
     "Mutation" -> Ok Mutation
     _ -> Err "Invalid tag"
+```
+
+
+
+# What's this tag thing?
+
+You can chain webnative commands in Elm by providing a tag, which is then attached to the response. In the following example I have a custom type for my tags, which I then encode/decode to/from a string.
+
+```elm
+type Tag = Mutation
+
+-- Request
+Wnfs.writeUtf8 base
+  { path = [ "hello.txt" ]
+  , tag = tagToString Mutation
+  }
+
+-- Response
+case Wnfs.decodeResponse tagFromString response of
+  Ok ( Mutation, _ ) ->
+    ( model
+    , Ports.wnfsRequest Wnfs.publish
+    )
 ```
 
 
