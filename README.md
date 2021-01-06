@@ -6,7 +6,7 @@
 [![Discord](https://img.shields.io/discord/478735028319158273.svg)](https://discord.gg/zAQBDEq)
 [![Discourse](https://img.shields.io/discourse/https/talk.fission.codes/topics)](https://talk.fission.codes)
 
-A thin wrapper around webnative for Elm.
+A thin wrapper around [webnative](https://github.com/fission-suite/webnative#readme) for Elm.
 
 
 
@@ -153,7 +153,7 @@ case Wnfs.decodeResponse tagFromString response of
 
 # API
 
-We don't support all the functions from webnative yet.  
+We don't support all the functions from [webnative](https://github.com/fission-suite/webnative#readme) yet.  
 For now you can do the following from Elm:
 
 - All WNFS interactions

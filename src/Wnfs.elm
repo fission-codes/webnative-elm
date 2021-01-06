@@ -8,7 +8,7 @@ module Wnfs exposing
     , Entry, Kind(..)
     )
 
-{-| Interact with your filesystem.
+{-| Interact with your [filesystem](https://guide.fission.codes/developers/webnative#file-system).
 
 
 # Actions

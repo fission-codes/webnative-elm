@@ -3,7 +3,7 @@ module Webnative exposing
     , Request, Response
     )
 
-{-| Generic types across all ports, and general webnative functions.
+{-| Generic types across all ports, and general [webnative](https://github.com/fission-suite/webnative#readme) functions.
 
 
 # Authorisation
