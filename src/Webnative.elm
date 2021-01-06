@@ -1,4 +1,23 @@
-module Webnative exposing (AppPermissions, FileSystemPermissions, Permissions, RedirectTo(..), Request, Response, redirectToLobby)
+module Webnative exposing
+    ( redirectToLobby, RedirectTo(..), AppPermissions, FileSystemPermissions, Permissions
+    , Request, Response
+    )
+
+{-| Generic types across all ports, and general webnative functions.
+
+
+# Authorisation
+
+@docs redirectToLobby, RedirectTo, AppPermissions, FileSystemPermissions, Permissions
+
+
+# Ports
+
+Data passing through the ports.
+
+@docs Request, Response
+
+-}
 
 import Json.Encode as Json
 import Maybe.Extra as Maybe
@@ -9,29 +28,39 @@ import Url exposing (Url)
 -- 🌳
 
 
+{-| Where the authorisation lobby should redirect to after authorisation.
+-}
 type RedirectTo
     = CurrentUrl
     | RedirectTo Url
 
 
+{-| Application permissions.
+-}
 type alias AppPermissions =
     { creator : String
     , name : String
     }
 
 
+{-| Filesystem permissions.
+-}
 type alias FileSystemPermissions =
     { privatePaths : List String
     , publicPaths : List String
     }
 
 
+{-| Permissions to ask the user.
+-}
 type alias Permissions =
     { app : Maybe AppPermissions
     , fs : Maybe FileSystemPermissions
     }
 
 
+{-| Request from webnative.
+-}
 type alias Request =
     { tag : String
     , method : String
@@ -39,6 +68,8 @@ type alias Request =
     }
 
 
+{-| Response from webnative.
+-}
 type alias Response =
     { tag : String
     , method : String
@@ -50,6 +81,8 @@ type alias Response =
 -- 📣
 
 
+{-| Redirect to the authorisation lobby.
+-}
 redirectToLobby : RedirectTo -> Maybe Permissions -> Request
 redirectToLobby redirectTo maybePermissions =
     { tag = ""
