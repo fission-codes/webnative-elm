@@ -10,5 +10,10 @@
   },
   "devDependencies": {
     "webnative": "^0.21.1"
-  }
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "src/**/*.js"
+  ]
 }
