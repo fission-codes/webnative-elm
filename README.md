@@ -151,6 +151,19 @@ case Wnfs.decodeResponse tagFromString response of
 
 
 
+# Supported methods
+
+We don't support all the functions from webnative yet.  
+For now you can do the following from Elm:
+
+- All WNFS interactions
+- Redirect to lobby
+
+More coming later.  
+[Let us know](https://talk.fission.codes) if you have any requests.
+
+
+
 # Customisation
 
 You can customise the port names by passing in a third parameter.
