@@ -151,7 +151,7 @@ case Wnfs.decodeResponse tagFromString response of
 
 
 
-# Supported methods
+# API
 
 We don't support all the functions from webnative yet.  
 For now you can do the following from Elm:
