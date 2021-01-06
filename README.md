@@ -8,6 +8,8 @@
 
 A thin wrapper around [webnative](https://github.com/fission-suite/webnative#readme) for Elm.
 
+> Fission helps developers build and scale their apps. We’re building a web native file system that combines files, encryption, and identity, like an open source iCloud.
+
 
 
 # QuickStart
