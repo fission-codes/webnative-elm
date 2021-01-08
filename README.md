@@ -62,14 +62,14 @@ type Msg
   = ReadWnfsFile
   | WriteToWnfsFile
     --
-  | GotWnfsResponse
+  | GotWnfsResponse Webnative.Response
 
 type Tag
   = ReadHelloTxt
   | Mutation
 
 
-base : Wnfs.Base Webnative.Response
+base : Wnfs.Base
 base =
   Wnfs.AppData
     { creator = "Fission"
