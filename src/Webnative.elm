@@ -10,7 +10,7 @@ module Webnative exposing
 {-| Generic types across all ports, and general [webnative](https://github.com/fission-suite/webnative#readme) functions.
 
 
-# 🚀
+# Getting Started
 
 @docs init, InitOptions, initWithOptions, initialise, initialize
 
@@ -201,10 +201,14 @@ isAuthenticated state =
 -- 📣
 
 
-{-| Check if we're authenticated, process any lobby query-parameters present in the URL, and initiate the user's filesystem if authenticated (can be disabled using `initWithOptions`).
+{-| 🚀 **Start here**
+
+Check if we're authenticated, process any lobby query-parameters present in the URL, and initiate the user's filesystem if authenticated (can be disabled using `initWithOptions`).
 
 See `loadFileSystem` if you want to load the user's filesystem yourself.
-NOTE: Only works on the main/ui thread, as it uses `window.location`.
+**NOTE**, this only works on the main/ui thread, as it uses `window.location`.
+
+See the [README](../) for an example.
 
 -}
 init : Permissions -> Request
@@ -291,23 +295,32 @@ redirectToLobby redirectTo permissions =
 {-| Function to be used to decode the response from webnative we got through our port.
 
     GotWebnativeResponse response ->
-        case Webnative.decodeResponse tagFromString response of
-            Ok ( Webnative, Initialise, Initialisation state ) ->
-                if Webnative.isAuthenticated state then
-                    loadUserData
-                else
-                    welcome
+      case Webnative.decodeResponse tagFromString response of
+        -----------------------------------------
+        -- 🚀
+        -----------------------------------------
+        Ok ( _, _, Initialisation state ) ->
+          if Webnative.isAuthenticated state then
+            loadUserData
+          else
+            welcome
 
-            Ok ( Wnfs, ReadHelloTxt, Wnfs.Utf8Content helloContents ) ->
-                -- Do something with content from hello.txt
+        -----------------------------------------
+        -- 💾
+        -----------------------------------------
+        Ok ( Wnfs, Just ReadHelloTxt, Wnfs.Utf8Content helloContents ) ->
+          -- Do something with content from hello.txt
 
-            Ok ( Wnfs, Mutation, _ ) ->
-                ( model
-                , Ports.wnfsRequest Wnfs.publish
-                )
+        Ok ( Wnfs, Just Mutation, _ ) ->
+          ( model
+          , Ports.webnativeRequest Wnfs.publish
+          )
 
-            Err ( maybeContext, errString ) ->
-                -- Decoding, or tag parse, error.
+        -----------------------------------------
+        -- 🥵
+        -----------------------------------------
+        Err ( maybeContext, errString ) ->
+          -- Initialisation error, tag parse error, etc.
 
 See the [README](../) for the full example.
 
