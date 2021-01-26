@@ -45,7 +45,7 @@ webnativeElm.setup(elmApp)
 Once we have that setup, we can write our webnative Elm code.
 
 ```elm
-import Webnative exposing (Context(..))
+import Webnative exposing (Artifact(..), Context(..))
 import Wnfs
 
 
