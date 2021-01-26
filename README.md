@@ -52,7 +52,7 @@ import Wnfs
 -- INIT
 
 
-permissions : Webnative.permissions
+permissions : Webnative.Permissions
 permissions =
   { app = Just { creator = "Fission", name = "Example" }
   , fs = Nothing
