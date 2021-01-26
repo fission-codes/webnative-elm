@@ -52,11 +52,14 @@ import Wnfs
 -- INIT
 
 
+appPermissions : Webnative.AppPermissions
+appPermissions =
+  { creator = "Fission", name = "Example" }
+
+
 permissions : Webnative.Permissions
 permissions =
-  { app = Just { creator = "Fission", name = "Example" }
-  , fs = Nothing
-  }
+  { app = Just appPermissions, fs = Nothing }
 
 
 init : (Model, Cmd Msg)
@@ -80,7 +83,7 @@ type Tag
 
 base : Wnfs.Base
 base =
-  Wnfs.AppData permissions.app
+  Wnfs.AppData appPermissions
 
 
 
