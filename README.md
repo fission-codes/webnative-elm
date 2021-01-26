@@ -42,7 +42,7 @@ import * as webnativeElm from "webnative-elm"
 webnativeElm.setup(elmApp)
 ```
 
-Once we have that setup, we need can write our webnative Elm code.
+Once we have that setup, we can write our webnative Elm code.
 
 ```elm
 import Webnative exposing (Context(..))
