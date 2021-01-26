@@ -212,7 +212,7 @@ More coming later.
 
 
 
-# Loading in the filesystem separately
+# Filesystem
 
 Alternatively you can load the filesystem separately.  
 You may want to do this when working with a web worker.
