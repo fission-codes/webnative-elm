@@ -34,6 +34,25 @@ toBytes list =
 
 
 
+-- ERRORS
+
+
+type Error
+    = DecodingError
+    | InvalidMethod
+
+
+error : Error -> String -> String
+error err context =
+    case err of
+        DecodingError ->
+            "Couldn't decode WNFS response: " ++ context
+
+        InvalidMethod ->
+            "Invalid method: " ++ context
+
+
+
 -- JSON
 
 
@@ -85,7 +104,7 @@ type Method
 
 methodFromString : String -> Maybe Method
 methodFromString string =
-    case String.toLower string of
+    case string of
         "exists" ->
             Just Exists
 

@@ -1,9 +1,23 @@
 module Webnative exposing
-    ( redirectToLobby, RedirectTo(..), AppPermissions, FileSystemPermissions, Permissions
-    , Request, Response
+    ( init, InitOptions, initWithOptions, initialise, initialize
+    , isAuthenticated, State(..), AuthSucceededState, AuthCancelledState, ContinuationState
+    , redirectToLobby, RedirectTo(..), AppPermissions, FileSystemPermissions, Permissions
+    , decodeResponse, Artifact(..), Request, Response
+    , loadFilesystem
+    , contextToString, contextFromString, Context(..)
     )
 
 {-| Generic types across all ports, and general [webnative](https://github.com/fission-suite/webnative#readme) functions.
+
+
+# 🚀
+
+@docs init, InitOptions, initWithOptions, initialise, initialize
+
+
+# Authentication
+
+@docs isAuthenticated, State, AuthSucceededState, AuthCancelledState, ContinuationState
 
 
 # Authorisation
@@ -15,17 +29,54 @@ module Webnative exposing
 
 Data passing through the ports.
 
-@docs Request, Response
+@docs decodeResponse, Artifact, Request, Response
+
+
+# Filesystem
+
+@docs loadFilesystem
+
+
+# Miscellaneous
+
+@docs contextToString, contextFromString, Context
 
 -}
 
+import Bytes exposing (Bytes)
+import Dict
+import Json.Decode exposing (Decoder)
 import Json.Encode as Json
 import Maybe.Extra as Maybe
 import Url exposing (Url)
+import Webnative.Internal as Webnative exposing (..)
+import Wnfs.Directory exposing (..)
+import Wnfs.Internal as Wnfs exposing (..)
 
 
 
 -- 🌳
+
+
+{-| Artifact we receive in the response.
+-}
+type Artifact
+    = NoArtifact
+      -- Webnative
+    | Initialisation State
+      -- WNFS
+    | Boolean Bool
+    | CID String
+    | DirectoryContent (List Entry)
+    | FileContent Bytes
+    | Utf8Content String
+
+
+{-| Request, or response, context.
+-}
+type Context
+    = Webnative
+    | Wnfs
 
 
 {-| Where the authorisation lobby should redirect to after authorisation.
@@ -51,6 +102,23 @@ type alias FileSystemPermissions =
     }
 
 
+{-| Options for `initWithOptions`.
+-}
+type alias InitOptions =
+    { autoRemoveUrlParams : Bool
+    , loadFilesystem : Bool
+    }
+
+
+{-| Default `InitOptions`.
+-}
+defaultInitOptions : InitOptions
+defaultInitOptions =
+    { autoRemoveUrlParams = True
+    , loadFilesystem = True
+    }
+
+
 {-| Permissions to ask the user.
 -}
 type alias Permissions =
@@ -62,7 +130,8 @@ type alias Permissions =
 {-| Request from webnative.
 -}
 type alias Request =
-    { tag : String
+    { context : String
+    , tag : String
     , method : String
     , arguments : List Json.Value
     }
@@ -71,24 +140,134 @@ type alias Request =
 {-| Response from webnative.
 -}
 type alias Response =
-    { tag : String
+    { context : String
+    , error : Maybe String
+    , tag : String
     , method : String
     , data : Json.Value
     }
 
 
 
+-- 🌳  ⌘  AUTH
+
+
+{-| Initialisation state, result from `init`.
+-}
+type State
+    = NotAuthorised
+    | AuthSucceeded AuthSucceededState
+    | AuthCancelled AuthCancelledState
+    | Continuation ContinuationState
+
+
+type alias AuthSucceededState =
+    { newUser : Bool, throughLobby : Bool, username : String }
+
+
+type alias AuthCancelledState =
+    { cancellationReason : String, throughLobby : Bool }
+
+
+type alias ContinuationState =
+    { newUser : Bool, throughLobby : Bool, username : String }
+
+
+isAuthenticated : State -> Bool
+isAuthenticated state =
+    case state of
+        NotAuthorised ->
+            False
+
+        AuthSucceeded _ ->
+            True
+
+        AuthCancelled _ ->
+            False
+
+        Continuation _ ->
+            True
+
+
+
 -- 📣
+
+
+{-| Initialise webnative.
+
+Make sure to run this before anything (except `setup` statements).
+
+This handles:
+
+  - Authorisation (when being redirected back from the lobby)
+  - Loading the filesystem
+
+-}
+init : Permissions -> Request
+init =
+    initWithOptions defaultInitOptions
+
+
+initWithOptions : InitOptions -> Permissions -> Request
+initWithOptions options permissions =
+    { context = contextToString Webnative
+    , tag = ""
+    , method = Webnative.methodToString Initialise
+    , arguments =
+        [ Json.object
+            [ ( "autoRemoveUrlParams"
+              , Json.bool options.autoRemoveUrlParams
+              )
+            , ( "loadFilesystem"
+              , Json.bool options.loadFilesystem
+              )
+            , ( "permissions"
+              , Maybe.unwrap Json.null encodePermissions (flattenPermissions permissions)
+              )
+            ]
+        ]
+    }
+
+
+{-| Alias for `init`.
+-}
+initialise : Permissions -> Request
+initialise =
+    init
+
+
+{-| Alias for `init`.
+-}
+initialize : Permissions -> Request
+initialize =
+    init
+
+
+{-| Load in the filesystem manually.
+-}
+loadFilesystem : Permissions -> Request
+loadFilesystem permissions =
+    { context = contextToString Webnative
+    , tag = ""
+    , method = Webnative.methodToString LoadFilesystem
+    , arguments =
+        [ Maybe.unwrap
+            Json.null
+            encodePermissions
+            (flattenPermissions permissions)
+        ]
+    }
 
 
 {-| Redirect to the authorisation lobby.
 -}
-redirectToLobby : RedirectTo -> Maybe Permissions -> Request
-redirectToLobby redirectTo maybePermissions =
-    { tag = ""
-    , method = "redirectToLobby"
+redirectToLobby : RedirectTo -> Permissions -> Request
+redirectToLobby redirectTo permissions =
+    { context = contextToString Webnative
+    , tag = ""
+    , method = Webnative.methodToString RedirectToLobby
     , arguments =
-        [ Maybe.unwrap Json.null encodePermissions maybePermissions
+        [ Maybe.unwrap Json.null encodePermissions (flattenPermissions permissions)
         , case redirectTo of
             CurrentUrl ->
                 Json.null
@@ -97,6 +276,104 @@ redirectToLobby redirectTo maybePermissions =
                 Json.string (Url.toString url)
         ]
     }
+
+
+
+-- 📰
+
+
+{-| Function to be used to decode the response from webnative we got through our port.
+
+    GotWebnativeResponse response ->
+        case Webnative.decodeResponse tagFromString response of
+            Ok ( Webnative, Initialise, Initialisation state ) ->
+                if Webnative.isAuthenticated state then
+                    loadUserData
+                else
+                    welcome
+
+            Ok ( Wnfs, ReadHelloTxt, Wnfs.Utf8Content helloContents ) ->
+                -- Do something with content from hello.txt
+
+            Ok ( Wnfs, Mutation, _ ) ->
+                ( model
+                , Ports.wnfsRequest Wnfs.publish
+                )
+
+            Err ( maybeContext, errString ) ->
+                -- Decoding, or tag parse, error.
+
+See the [README](../) for the full example.
+
+-}
+decodeResponse :
+    (String -> Result String tag)
+    -> Response
+    -> Result ( Maybe Context, String ) ( Context, Maybe tag, Artifact )
+decodeResponse tagParser response =
+    case ( response.error, contextFromString response.context ) of
+        -----------------------------------------
+        -- Errors
+        -----------------------------------------
+        ( Just "INSECURE_CONTEXT", Just Webnative ) ->
+            Err ( Just Webnative, Webnative.error Webnative.InsecureContext "" )
+
+        ( Just "UNSUPPORTED_BROWSER", Just Webnative ) ->
+            Err ( Just Webnative, Webnative.error Webnative.UnsupportedBrowser "" )
+
+        ( Just err, maybeContext ) ->
+            Err ( maybeContext, err )
+
+        -----------------------------------------
+        -- Webnative
+        -----------------------------------------
+        ( Nothing, Just Webnative ) ->
+            response
+                |> decodeWebnativeResponse tagParser
+                |> Result.map (\( a, b ) -> ( Webnative, a, b ))
+                |> Result.mapError (Tuple.pair <| Just Webnative)
+
+        -----------------------------------------
+        -- WNFS
+        -----------------------------------------
+        ( Nothing, Just Wnfs ) ->
+            response
+                |> decodeWnfsResponse tagParser
+                |> Result.map (\( a, b ) -> ( Wnfs, a, b ))
+                |> Result.mapError (Tuple.pair <| Just Wnfs)
+
+        -----------------------------------------
+        -- 🤷
+        -----------------------------------------
+        ( Nothing, Nothing ) ->
+            Err ( Nothing, "Invalid context" )
+
+
+
+-- 🛠
+
+
+contextToString : Context -> String
+contextToString context =
+    case context of
+        Webnative ->
+            "WEBNATIVE"
+
+        Wnfs ->
+            "WNFS"
+
+
+contextFromString : String -> Maybe Context
+contextFromString string =
+    case String.toUpper string of
+        "WEBNATIVE" ->
+            Just Webnative
+
+        "WNFS" ->
+            Just Wnfs
+
+        _ ->
+            Nothing
 
 
 
@@ -125,3 +402,185 @@ encodeFileSystemPermissions { privatePaths, publicPaths } =
         [ ( "privatePaths", Json.list Json.string privatePaths )
         , ( "publicPaths", Json.list Json.string publicPaths )
         ]
+
+
+flattenPermissions : Permissions -> Maybe Permissions
+flattenPermissions permissions =
+    case ( permissions.app, permissions.fs ) of
+        ( Nothing, Nothing ) ->
+            Nothing
+
+        _ ->
+            Just permissions
+
+
+
+-- ㊙️  ⌘  WEBNATIVE RESPONSE
+
+
+decodeWebnativeResponse : (String -> Result String tag) -> Response -> Result String ( Maybe tag, Artifact )
+decodeWebnativeResponse tagParser response =
+    case Webnative.methodFromString response.method of
+        Nothing ->
+            Err (Webnative.error Webnative.InvalidMethod response.method)
+
+        Just method ->
+            response.data
+                |> Json.Decode.decodeValue
+                    (case method of
+                        Initialise ->
+                            Json.Decode.map Initialisation stateDecoder
+
+                        LoadFilesystem ->
+                            Json.Decode.succeed NoArtifact
+
+                        RedirectToLobby ->
+                            Json.Decode.succeed NoArtifact
+                    )
+                |> Result.mapError
+                    (Json.Decode.errorToString >> Webnative.error Webnative.DecodingError)
+                |> Result.andThen
+                    (\artifact ->
+                        case response.tag of
+                            "" ->
+                                Ok ( Nothing, artifact )
+
+                            _ ->
+                                response.tag
+                                    |> tagParser
+                                    |> Result.map (\t -> ( Just t, artifact ))
+                    )
+
+
+stateDecoder : Decoder State
+stateDecoder =
+    Json.Decode.andThen
+        (\scenario ->
+            case scenario of
+                "NOT_AUTHORISED" ->
+                    Json.Decode.succeed NotAuthorised
+
+                "AUTH_SUCCEEDED" ->
+                    Json.Decode.map AuthSucceeded authSucceededDecoder
+
+                "AUTH_CANCELLED" ->
+                    Json.Decode.map AuthCancelled authCancelledDecoder
+
+                "CONTINUATION" ->
+                    Json.Decode.map Continuation continuationDecoder
+
+                other ->
+                    Json.Decode.fail "Initialise returned an unknown scenario"
+        )
+        (Json.Decode.field "scenario" Json.Decode.string)
+
+
+authSucceededDecoder : Decoder AuthSucceededState
+authSucceededDecoder =
+    Json.Decode.map3 AuthSucceededState
+        (Json.Decode.field "newUser" Json.Decode.bool)
+        (Json.Decode.field "throughLobby" Json.Decode.bool)
+        (Json.Decode.field "username" Json.Decode.string)
+
+
+authCancelledDecoder : Decoder AuthCancelledState
+authCancelledDecoder =
+    Json.Decode.map2 AuthCancelledState
+        (Json.Decode.field "cancellationReason" Json.Decode.string)
+        (Json.Decode.field "throughLobby" Json.Decode.bool)
+
+
+continuationDecoder : Decoder ContinuationState
+continuationDecoder =
+    Json.Decode.map3 ContinuationState
+        (Json.Decode.field "newUser" Json.Decode.bool)
+        (Json.Decode.field "throughLobby" Json.Decode.bool)
+        (Json.Decode.field "username" Json.Decode.string)
+
+
+
+-- ㊙️  ⌘  WNFS RESPONSE
+
+
+decodeWnfsResponse : (String -> Result String tag) -> Response -> Result String ( Maybe tag, Artifact )
+decodeWnfsResponse tagParser response =
+    case Wnfs.methodFromString response.method of
+        Nothing ->
+            Err (Wnfs.error Wnfs.InvalidMethod response.method)
+
+        Just method ->
+            response.data
+                |> Json.Decode.decodeValue
+                    (case method of
+                        Exists ->
+                            Json.Decode.map Boolean Json.Decode.bool
+
+                        Ls ->
+                            Json.Decode.map DirectoryContent directoryContentDecoder
+
+                        Mkdir ->
+                            Json.Decode.succeed NoArtifact
+
+                        Mv ->
+                            Json.Decode.succeed NoArtifact
+
+                        Publish ->
+                            Json.Decode.map CID cidDecoder
+
+                        Read ->
+                            Json.Decode.map FileContent fileContentDecoder
+
+                        ReadUtf8 ->
+                            Json.Decode.map Utf8Content utf8ContentDecoder
+
+                        Rm ->
+                            Json.Decode.succeed NoArtifact
+
+                        Write ->
+                            Json.Decode.succeed NoArtifact
+                    )
+                |> Result.mapError
+                    (Json.Decode.errorToString >> Wnfs.error Wnfs.DecodingError)
+                |> Result.andThen
+                    (\artifact ->
+                        response.tag
+                            |> tagParser
+                            |> Result.map (\t -> ( Just t, artifact ))
+                    )
+
+
+directoryContentDecoder : Json.Decode.Decoder (List Entry)
+directoryContentDecoder =
+    Json.Decode.map3
+        (\cid isFile size ->
+            { cid = cid
+            , size = size
+            , kind =
+                if isFile then
+                    File
+
+                else
+                    Directory
+            }
+        )
+        (Json.Decode.oneOf
+            [ Json.Decode.field "cid" Json.Decode.string
+            , Json.Decode.field "pointer" Json.Decode.string
+            ]
+        )
+        (Json.Decode.field "isFile" Json.Decode.bool)
+        (Json.Decode.field "size" Json.Decode.int)
+        |> Json.Decode.dict
+        |> Json.Decode.map
+            (\dict ->
+                dict
+                    |> Dict.toList
+                    |> List.map
+                        (\( name, { cid, kind, size } ) ->
+                            { cid = cid
+                            , kind = kind
+                            , name = name
+                            , size = size
+                            }
+                        )
+            )
