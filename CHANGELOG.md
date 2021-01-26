@@ -1,6 +1,12 @@
 # Changelog
 
 
+### 2.1.0
+
+- Expose `Wnfs.Directory` module
+- Improve documentation
+
+
 ### 2.0.0
 
 - **Ability to initialise webnative via Elm**
