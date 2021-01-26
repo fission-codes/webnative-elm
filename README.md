@@ -27,8 +27,7 @@ port module Ports exposing (..)
 import Webnative
 
 port webnativeRequest : Webnative.Request -> Cmd msg
-port wnfsRequest : Webnative.Request -> Cmd msg
-port wnfsResponse : (Webnative.Response -> msg) -> Sub msg
+port webnativeResponse : (Webnative.Response -> msg) -> Sub msg
 
 ```
 
@@ -40,29 +39,39 @@ import * as webnativeElm from "webnative-elm"
 
 // elmApp = Elm.Main.init()
 
-webnative
-  .initialise({
-    permissions: {
-      app: { creator: "Fission", name: "Example" }
-    }
-  })
-  .then(state => {
-    webnativeElm.setup(elmApp, state.fs)
-  })
+webnativeElm.setup(elmApp)
 ```
 
 Once we have that setup, we need can write our webnative Elm code.
 
 ```elm
-import Webnative
+import Webnative exposing (Context(..))
 import Wnfs
 
 
-type Msg
-  = ReadWnfsFile
-  | WriteToWnfsFile
-    --
-  | GotWnfsResponse Webnative.Response
+-- INIT
+
+
+permissions : Webnative.Permissions
+permissions =
+  { app = Just { creator = "Fission", name = "Example" }
+  , fs = Nothing
+  }
+
+
+init : (Model, Cmd Msg)
+init =
+  ( {}
+  , permissions
+      |> Webnative.init
+      |> Ports.webnativeRequest
+      -- 🚀 We'll get a response in the `GotWebnativeResponse` msg
+  )
+
+
+
+-- FILESYSTEM PREP
+
 
 type Tag
   = ReadHelloTxt
@@ -71,20 +80,59 @@ type Tag
 
 base : Wnfs.Base
 base =
-  Wnfs.AppData
-    { creator = "Fission"
-    , name = "Example"
-    }
+  Wnfs.AppData permissions.app
+
+
+
+-- UPDATE
+
+
+type Msg
+  = GotWebnativeResponse Webnative.Response
+  --
+  | ReadWnfsFile
+  | WriteToWnfsFile
+
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
+    GotWebnativeResponse response ->
+      case Webnative.decodeResponse tagFromString response of
+        -----------------------------------------
+        -- 🚀
+        -----------------------------------------
+        Ok ( _, _, Initialisation state ) ->
+          if Webnative.isAuthenticated state then
+            loadUserData
+          else
+            welcome
+
+        -----------------------------------------
+        -- 💾
+        -----------------------------------------
+        Ok ( Wnfs, Just ReadHelloTxt, Wnfs.Utf8Content helloContents ) ->
+          -- Do something with content from hello.txt
+
+        Ok ( Wnfs, Just Mutation, _ ) ->
+          ( model
+          , Ports.webnativeRequest Wnfs.publish
+          )
+
+        -----------------------------------------
+        -- 🥵
+        -----------------------------------------
+        Err ( maybeContext, errString ) ->
+          -- Initialisation error, tag parse error, etc.
+
+    --
+
     ReadWnfsFile ->
       { path = [ "hello.txt" ]
       , tag = tagToString ReadHelloTxt
       }
         |> Wnfs.readUtf8 base
-        |> Ports.wnfsRequest
+        |> Ports.webnativeRequest
         |> Tuple.pair model
 
     WriteToWnfsFile ->
@@ -93,32 +141,25 @@ update msg model =
           { path = [ "hello.txt" ]
           , tag = tagToString Mutation
           }
-        |> Ports.wnfsRequest
+        |> Ports.webnativeRequest
         |> Tuple.pair model
 
-    --
 
-    GotWnfsResponse response ->
-      case Wnfs.decodeResponse tagFromString response of
-        Ok ( ReadHelloTxt, Wnfs.Utf8Content helloContents ) ->
-          -- Do something with content from hello.txt
+subscriptions : Sub Msg
+subscriptions =
+  Ports.webnativeResponse GotWebnativeResponse
 
-        Ok ( Mutation, _ ) ->
-          ( model
-          , Ports.wnfsRequest Wnfs.publish
-          )
-
-        Err errString ->
-          -- Decoding, or tag parse, error.
 
 
 -- TAG ENCODING/DECODING
+
 
 tagToString : Tag -> String
 tagToString tag =
   case tag of
     ReadHelloTxt -> "ReadHelloTxt"
     Mutation -> "Mutation"
+
 
 tagFromString : String -> Result String Tag
 tagFromString string =
@@ -135,6 +176,9 @@ tagFromString string =
 You can chain webnative commands in Elm by providing a tag, which is then attached to the response. In the following example I have a custom type for my tags, which I then encode/decode to/from a string.
 
 ```elm
+import Webnative exposing (Context(..))
+import Wnfs
+
 type Tag = Mutation
 
 -- Request
@@ -144,12 +188,14 @@ Wnfs.writeUtf8 base
   }
 
 -- Response
-case Wnfs.decodeResponse tagFromString response of
-  Ok ( Mutation, _ ) ->
+case Webnative.decodeResponse tagFromString response of
+  Ok ( Wnfs, Just Mutation, _ ) ->
     ( model
-    , Ports.wnfsRequest Wnfs.publish
+    , Ports.webnativeRequest Wnfs.publish
     )
 ```
+
+Request from the `Webnative` module don't have tags, that's why we're using a `Maybe`.
 
 
 
@@ -166,18 +212,38 @@ More coming later.
 
 
 
+# Filesystem
+
+Alternatively you can load the filesystem separately.  
+You may want to do this when working with a web worker.
+
+```elm
+import Webnative exposing (defaultInitOptions)
+
+Webnative.initWithOptions
+  { defaultInitOptions | loadFilesystem = False }
+```
+
+And then load it either in Elm or in javascript.
+
+```elm
+Webnative.loadFilesystem permissions
+```
+
+```js
+const fs = await webnative.loadFilesystem(permissions)
+webnativeElm.setup(elmApp, () => fs)
+```
+
+
+
 # Customisation
 
 You can customise the port names by passing in a third parameter.
 
 ```js
-webnativeElm.setup(elmApp, state.fs, {
-  webnative: {
-    incoming: "webnativeRequest"
-  },
-  wnfs: {
-    incoming: "wnfsRequest",
-    outgoing: "wnfsResponse"
-  }
+webnativeElm.setup(elmApp, undefined, {
+  incoming: "webnativeRequest",
+  outgoing: "webnativeResponse"
 })
 ```
