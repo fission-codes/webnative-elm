@@ -123,7 +123,7 @@ update msg model =
         -- 🥵
         -----------------------------------------
         Err ( maybeContext, errString ) ->
-          -- Decoding, or tag parse, error.
+          -- Initialisation error, tag parse error, etc.
 
     --
 
@@ -214,7 +214,8 @@ More coming later.
 
 # Loading in the filesystem separately
 
-Alternatively you can load the filesystem separately.
+Alternatively you can load the filesystem separately.  
+You may want to do this when working with a web worker.
 
 ```elm
 import Webnative exposing (defaultInitOptions)

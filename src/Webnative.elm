@@ -161,18 +161,26 @@ type State
     | Continuation ContinuationState
 
 
+{-| State attributes when auth has succeeded.
+-}
 type alias AuthSucceededState =
     { newUser : Bool, throughLobby : Bool, username : String }
 
 
+{-| State attributes when auth was cancelled.
+-}
 type alias AuthCancelledState =
     { cancellationReason : String, throughLobby : Bool }
 
 
+{-| State attributes when continueing a session.
+-}
 type alias ContinuationState =
     { newUser : Bool, throughLobby : Bool, username : String }
 
 
+{-| Are we authenticated?
+-}
 isAuthenticated : State -> Bool
 isAuthenticated state =
     case state of
@@ -193,14 +201,10 @@ isAuthenticated state =
 -- 📣
 
 
-{-| Initialise webnative.
+{-| Check if we're authenticated, process any lobby query-parameters present in the URL, and initiate the user's filesystem if authenticated (can be disabled using `initWithOptions`).
 
-Make sure to run this before anything (except `setup` statements).
-
-This handles:
-
-  - Authorisation (when being redirected back from the lobby)
-  - Loading the filesystem
+See `loadFileSystem` if you want to load the user's filesystem yourself.
+NOTE: Only works on the main/ui thread, as it uses `window.location`.
 
 -}
 init : Permissions -> Request
@@ -208,6 +212,8 @@ init =
     initWithOptions defaultInitOptions
 
 
+{-| Initialise webnative, with options.
+-}
 initWithOptions : InitOptions -> Permissions -> Request
 initWithOptions options permissions =
     { context = contextToString Webnative
@@ -353,6 +359,8 @@ decodeResponse tagParser response =
 -- 🛠
 
 
+{-| Cast a Context to a String.
+-}
 contextToString : Context -> String
 contextToString context =
     case context of
@@ -363,6 +371,8 @@ contextToString context =
             "WNFS"
 
 
+{-| Derive a Context from a String.
+-}
 contextFromString : String -> Maybe Context
 contextFromString string =
     case String.toUpper string of
