@@ -1,13 +1,20 @@
 module Webnative exposing
     ( init, InitOptions, initWithOptions, initialise, initialize
-    , isAuthenticated, State(..), AuthSucceededState, AuthCancelledState, ContinuationState
-    , redirectToLobby, RedirectTo(..), AppPermissions, FileSystemPermissions, Permissions
     , decodeResponse, Artifact(..), Request, Response
+    , redirectToLobby, RedirectTo(..), AppPermissions, FileSystemPermissions, Permissions
+    , isAuthenticated, State(..), AuthSucceededState, AuthCancelledState, ContinuationState
     , loadFilesystem
     , contextToString, contextFromString, Context(..)
     )
 
-{-| Generic types across all ports, and general [webnative](https://github.com/fission-suite/webnative#readme) functions.
+{-| Interface for [webnative](https://github.com/fission-suite/webnative#readme).
+
+1.  [Getting Started](#getting-started)
+2.  [Ports](#ports)
+3.  [Authorisation](#authorisation)
+4.  [Authentication](#authentication)
+5.  [Filesystem](#filesystem)
+6.  [Miscellaneous](#miscellaneous)
 
 
 # Getting Started
@@ -15,9 +22,11 @@ module Webnative exposing
 @docs init, InitOptions, initWithOptions, initialise, initialize
 
 
-# Authentication
+# Ports
 
-@docs isAuthenticated, State, AuthSucceededState, AuthCancelledState, ContinuationState
+Data flowing through the ports. See `🚀` in the `decodeResponse` example on how to handle the result from `init`.
+
+@docs decodeResponse, Artifact, Request, Response
 
 
 # Authorisation
@@ -25,11 +34,9 @@ module Webnative exposing
 @docs redirectToLobby, RedirectTo, AppPermissions, FileSystemPermissions, Permissions
 
 
-# Ports
+# Authentication
 
-Data passing through the ports.
-
-@docs decodeResponse, Artifact, Request, Response
+@docs isAuthenticated, State, AuthSucceededState, AuthCancelledState, ContinuationState
 
 
 # Filesystem
@@ -49,8 +56,10 @@ import Json.Decode exposing (Decoder)
 import Json.Encode as Json
 import Maybe.Extra as Maybe
 import Url exposing (Url)
+import Webnative.Error as Webnative
 import Webnative.Internal as Webnative exposing (..)
 import Wnfs.Directory exposing (..)
+import Wnfs.Error as Wnfs
 import Wnfs.Internal as Wnfs exposing (..)
 
 
@@ -292,14 +301,20 @@ redirectToLobby redirectTo permissions =
 -- 📰
 
 
-{-| Function to be used to decode the response from webnative we got through our port.
+{-| Decode the result, the `Response`, from our `Request`.
+Connect this up with `webnativeResponse` subscription port.
+
+    subscriptions =
+        Ports.webnativeResponse GotWebnativeResponse
+
+And then in `update` use this function.
 
     GotWebnativeResponse response ->
       case Webnative.decodeResponse tagFromString response of
         -----------------------------------------
         -- 🚀
         -----------------------------------------
-        Ok ( _, _, Initialisation state ) ->
+        Ok ( Webnative, _, Initialisation state ) ->
           if Webnative.isAuthenticated state then
             loadUserData
           else
@@ -319,7 +334,7 @@ redirectToLobby redirectTo permissions =
         -----------------------------------------
         -- 🥵
         -----------------------------------------
-        Err ( maybeContext, errString ) ->
+        Err ( context, errTyped, errString ) ->
           -- Initialisation error, tag parse error, etc.
 
 See the [README](../) for the full example.
@@ -328,20 +343,46 @@ See the [README](../) for the full example.
 decodeResponse :
     (String -> Result String tag)
     -> Response
-    -> Result ( Maybe Context, String ) ( Context, Maybe tag, Artifact )
+    -> Result ( Context, Error, String ) ( Context, Maybe tag, Artifact )
 decodeResponse tagParser response =
     case ( response.error, contextFromString response.context ) of
         -----------------------------------------
         -- Errors
         -----------------------------------------
+        ( _, Nothing ) ->
+            Err
+                ( Webnative
+                , InvalidContext
+                , "Invalid context"
+                )
+
         ( Just "INSECURE_CONTEXT", Just Webnative ) ->
-            Err ( Just Webnative, Webnative.error Webnative.InsecureContext "" )
+            Err
+                ( Webnative
+                , WebnativeError Webnative.InsecureContext
+                , Webnative.error Webnative.InsecureContext
+                )
 
         ( Just "UNSUPPORTED_BROWSER", Just Webnative ) ->
-            Err ( Just Webnative, Webnative.error Webnative.UnsupportedBrowser "" )
+            Err
+                ( Webnative
+                , WebnativeError Webnative.UnsupportedBrowser
+                , Webnative.error Webnative.UnsupportedBrowser
+                )
 
-        ( Just err, maybeContext ) ->
-            Err ( maybeContext, err )
+        ( Just err, Just Webnative ) ->
+            Err
+                ( Webnative
+                , WebnativeError (Webnative.JavascriptError err)
+                , err
+                )
+
+        ( Just err, Just Wnfs ) ->
+            Err
+                ( Wnfs
+                , WnfsError (Wnfs.JavascriptError err)
+                , err
+                )
 
         -----------------------------------------
         -- Webnative
@@ -350,7 +391,13 @@ decodeResponse tagParser response =
             response
                 |> decodeWebnativeResponse tagParser
                 |> Result.map (\( a, b ) -> ( Webnative, a, b ))
-                |> Result.mapError (Tuple.pair <| Just Webnative)
+                |> Result.mapError
+                    (\e ->
+                        ( Webnative
+                        , WebnativeError e
+                        , Webnative.error e
+                        )
+                    )
 
         -----------------------------------------
         -- WNFS
@@ -359,13 +406,21 @@ decodeResponse tagParser response =
             response
                 |> decodeWnfsResponse tagParser
                 |> Result.map (\( a, b ) -> ( Wnfs, a, b ))
-                |> Result.mapError (Tuple.pair <| Just Wnfs)
+                |> Result.mapError
+                    (\e ->
+                        ( Wnfs
+                        , WnfsError e
+                        , Wnfs.error e
+                        )
+                    )
 
-        -----------------------------------------
-        -- 🤷
-        -----------------------------------------
-        ( Nothing, Nothing ) ->
-            Err ( Nothing, "Invalid context" )
+
+{-| Possible errors you can get from `decodeResponse`.
+-}
+type Error
+    = InvalidContext
+    | WebnativeError Webnative.Error
+    | WnfsError Wnfs.Error
 
 
 
@@ -441,11 +496,11 @@ flattenPermissions permissions =
 -- ㊙️  ⌘  WEBNATIVE RESPONSE
 
 
-decodeWebnativeResponse : (String -> Result String tag) -> Response -> Result String ( Maybe tag, Artifact )
+decodeWebnativeResponse : (String -> Result String tag) -> Response -> Result Webnative.Error ( Maybe tag, Artifact )
 decodeWebnativeResponse tagParser response =
     case Webnative.methodFromString response.method of
         Nothing ->
-            Err (Webnative.error Webnative.InvalidMethod response.method)
+            Err (Webnative.InvalidMethod response.method)
 
         Just method ->
             response.data
@@ -461,7 +516,7 @@ decodeWebnativeResponse tagParser response =
                             Json.Decode.succeed NoArtifact
                     )
                 |> Result.mapError
-                    (Json.Decode.errorToString >> Webnative.error Webnative.DecodingError)
+                    (Json.Decode.errorToString >> Webnative.DecodingError)
                 |> Result.andThen
                     (\artifact ->
                         case response.tag of
@@ -472,6 +527,7 @@ decodeWebnativeResponse tagParser response =
                                 response.tag
                                     |> tagParser
                                     |> Result.map (\t -> ( Just t, artifact ))
+                                    |> Result.mapError Webnative.TagParsingError
                     )
 
 
@@ -525,11 +581,11 @@ continuationDecoder =
 -- ㊙️  ⌘  WNFS RESPONSE
 
 
-decodeWnfsResponse : (String -> Result String tag) -> Response -> Result String ( Maybe tag, Artifact )
+decodeWnfsResponse : (String -> Result String tag) -> Response -> Result Wnfs.Error ( Maybe tag, Artifact )
 decodeWnfsResponse tagParser response =
     case Wnfs.methodFromString response.method of
         Nothing ->
-            Err (Wnfs.error Wnfs.InvalidMethod response.method)
+            Err (Wnfs.InvalidMethod response.method)
 
         Just method ->
             response.data
@@ -563,12 +619,18 @@ decodeWnfsResponse tagParser response =
                             Json.Decode.succeed NoArtifact
                     )
                 |> Result.mapError
-                    (Json.Decode.errorToString >> Wnfs.error Wnfs.DecodingError)
+                    (Json.Decode.errorToString >> Wnfs.DecodingError)
                 |> Result.andThen
                     (\artifact ->
-                        response.tag
-                            |> tagParser
-                            |> Result.map (\t -> ( Just t, artifact ))
+                        case response.tag of
+                            "" ->
+                                Ok ( Nothing, artifact )
+
+                            _ ->
+                                response.tag
+                                    |> tagParser
+                                    |> Result.map (\t -> ( Just t, artifact ))
+                                    |> Result.mapError Wnfs.TagParsingError
                     )
 
 

@@ -1,7 +1,7 @@
 {
   "name": "webnative-elm",
   "description": "Thin wrapper around webnative for Elm",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "author": "Steven Vandevelde <icid.asset@gmail.com>",
   "main": "src/funnel.js",
   "browser": "src/funnel.js",

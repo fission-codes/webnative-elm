@@ -105,7 +105,7 @@ update msg model =
         -----------------------------------------
         -- 🚀
         -----------------------------------------
-        Ok ( _, _, Initialisation state ) ->
+        Ok ( Webnative, _, Initialisation state ) ->
           if Webnative.isAuthenticated state then
             loadUserData
           else
@@ -125,7 +125,7 @@ update msg model =
         -----------------------------------------
         -- 🥵
         -----------------------------------------
-        Err ( maybeContext, errString ) ->
+        Err ( context, errTyped, errString ) ->
           -- Initialisation error, tag parse error, etc.
 
     --

@@ -1,6 +1,14 @@
 # Changelog
 
 
+### 3.0.0
+
+- Fixed issue with `publish` producing an error in `Webnative.decodeResponse`
+- Replaced `Maybe Context` with `Context` in the errors returned from `Webnative.decodeResponse`
+- Added an `Error` type along side the error message
+- Improved documentation
+
+
 ### 2.1.0
 
 - Expose `Wnfs.Directory` module

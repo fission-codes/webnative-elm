@@ -6,7 +6,7 @@ module Wnfs exposing
     , Base(..), Attributes
     )
 
-{-| Interact with your [filesystem](https://guide.fission.codes/developers/webnative#file-system).
+{-| Interact with your webnative [filesystem](https://guide.fission.codes/developers/webnative#file-system).
 
 
 # Actions
