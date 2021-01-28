@@ -79,6 +79,7 @@ init =
 type Tag
   = ReadHelloTxt
   | Mutation
+  | PointerUpdated
 
 
 base : Wnfs.Base
@@ -105,7 +106,7 @@ update msg model =
         -----------------------------------------
         -- 🚀
         -----------------------------------------
-        Ok ( Webnative, _, Initialisation state ) ->
+        Webnative ( Initialisation state ) ->
           if Webnative.isAuthenticated state then
             loadUserData
           else
@@ -114,19 +115,21 @@ update msg model =
         -----------------------------------------
         -- 💾
         -----------------------------------------
-        Ok ( Wnfs, Just ReadHelloTxt, Wnfs.Utf8Content helloContents ) ->
+        Wnfs ReadHelloTxt ( Utf8Content helloContents ) ->
           -- Do something with content from hello.txt
 
-        Ok ( Wnfs, Just Mutation, _ ) ->
+        Wnfs Mutation _ ->
           ( model
-          , Ports.webnativeRequest Wnfs.publish
+          , { tag = PointerUpdated }
+              |> Wnfs.publish
+              |> Ports.webnativeRequest
           )
 
         -----------------------------------------
         -- 🥵
         -----------------------------------------
-        Err ( context, errTyped, errString ) ->
-          -- Initialisation error, tag parse error, etc.
+        WebnativeError err -> Webnative.error err
+        WnfsError err -> Wnfs.error err
 
     --
 
@@ -182,7 +185,7 @@ You can chain webnative commands in Elm by providing a tag, which is then attach
 import Webnative exposing (Context(..))
 import Wnfs
 
-type Tag = Mutation
+type Tag = Mutation | PointerUpdated
 
 -- Request
 Wnfs.writeUtf8 base
@@ -192,13 +195,11 @@ Wnfs.writeUtf8 base
 
 -- Response
 case Webnative.decodeResponse tagFromString response of
-  Ok ( Wnfs, Just Mutation, _ ) ->
+  Wnfs Mutation _ ->
     ( model
-    , Ports.webnativeRequest Wnfs.publish
+    , Ports.webnativeRequest (Wnfs.publish PointerUpdated)
     )
 ```
-
-Request from the `Webnative` module don't have tags, that's why we're using a `Maybe`.
 
 
 

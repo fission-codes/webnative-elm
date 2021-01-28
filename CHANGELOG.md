@@ -1,5 +1,10 @@
 # Changelog
 
+### 4.0.0
+
+- Improved the return value of `Webnative.decodeResponse`
+- Forgot to expose the new `Error` type 😅
+
 
 ### 3.0.0
 

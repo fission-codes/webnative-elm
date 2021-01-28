@@ -3,7 +3,8 @@ module Wnfs exposing
     , mkdir, mv, rm, write, writeUtf8
     , exists, ls, read, readUtf8
     , add, cat
-    , Base(..), Attributes
+    , Base(..), Attributes, Artifact(..), Kind(..), Entry
+    , Error(..), error
     )
 
 {-| Interact with your webnative [filesystem](https://guide.fission.codes/developers/webnative#file-system).
@@ -29,9 +30,14 @@ module Wnfs exposing
 @docs add, cat
 
 
-# Types
+# Requests & Responses
 
-@docs Base, Attributes
+@docs Base, Attributes, Artifact, Kind, Entry
+
+
+# Errors
+
+@docs Error, error
 
 -}
 
@@ -39,12 +45,23 @@ import Bytes exposing (Bytes)
 import Bytes.Encode
 import Json.Decode
 import Json.Encode as Json
-import Webnative exposing (AppPermissions, Context(..), Request, Response, contextToString)
 import Wnfs.Internal exposing (..)
 
 
 
 -- 🌳
+
+
+{-| Artifact we receive in the response.
+-}
+type Artifact
+    = NoArtifact
+      --
+    | Boolean Bool
+    | CID String
+    | DirectoryContent (List Entry)
+    | FileContent Bytes
+    | Utf8Content String
 
 
 {-| Base of the WNFS action.
@@ -55,11 +72,66 @@ type Base
     | Public
 
 
+{-| Possible errors.
+-}
+type Error
+    = DecodingError String
+    | InvalidMethod String
+    | TagParsingError String
+    | JavascriptError String
+
+
+{-| Kind of `Entry`.
+-}
+type Kind
+    = Directory
+    | File
+
+
+{-| Application permissions.
+-}
+type alias AppPermissions =
+    { creator : String
+    , name : String
+    }
+
+
 {-| WNFS action attributes.
 -}
 type alias Attributes =
     { path : List String
     , tag : String
+    }
+
+
+{-| Directory `Entry`.
+-}
+type alias Entry =
+    { cid : String
+    , name : String
+    , kind : Kind
+    , size : Int
+    }
+
+
+{-| Request from webnative.
+-}
+type alias Request =
+    { context : String
+    , tag : String
+    , method : String
+    , arguments : List Json.Value
+    }
+
+
+{-| Response from webnative.
+-}
+type alias Response =
+    { context : String
+    , error : Maybe String
+    , tag : String
+    , method : String
+    , data : Json.Value
     }
 
 
@@ -106,7 +178,7 @@ mkdir =
 -}
 mv : Base -> { from : List String, to : List String, tag : String } -> Request
 mv base { from, to, tag } =
-    { context = contextToString Wnfs
+    { context = context
     , tag = tag
     , method = methodToString Mv
     , arguments =
@@ -120,10 +192,10 @@ mv base { from, to, tag } =
 **📢 You should run this after doing mutations.**
 See [README](../) examples for more info.
 -}
-publish : Request
-publish =
-    { context = contextToString Wnfs
-    , tag = ""
+publish : { tag : String } -> Request
+publish { tag } =
+    { context = context
+    , tag = tag
     , method = methodToString Publish
     , arguments = []
     }
@@ -168,12 +240,39 @@ writeUtf8 a b c =
 
 
 
+-- 🛠
+
+
+{-| `Error` message.
+-}
+error : Error -> String
+error err =
+    case err of
+        DecodingError ctx ->
+            "Couldn't decode WNFS response: " ++ ctx
+
+        InvalidMethod method ->
+            "Invalid method: " ++ method
+
+        JavascriptError string ->
+            "Wnfs.js error: " ++ string
+
+        TagParsingError string ->
+            "Couldn't parse tag: " ++ string
+
+
+
 -- ㊙️
+
+
+context : String
+context =
+    "WNFS"
 
 
 makeRequest : Method -> Base -> List String -> String -> List Json.Value -> Request
 makeRequest method base segments tag arguments =
-    { context = contextToString Wnfs
+    { context = context
     , tag = tag
     , method = methodToString method
     , arguments = Json.string (buildPath base segments) :: arguments

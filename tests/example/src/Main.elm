@@ -4,7 +4,8 @@ import Browser
 import Html
 import Html.Events
 import Ports
-import Webnative exposing (Artifact(..), Context(..), State(..))
+import Webnative exposing (Artifact(..), DecodedResponse(..), State(..))
+import Wnfs exposing (Artifact(..))
 
 
 main : Program () Model Msg
@@ -97,17 +98,41 @@ update msg model =
                     { model | loading = False }
             in
             case result of
-                Ok ( _, _, Initialisation (AuthSucceeded _) ) ->
-                    Tuple.pair
-                        { m | authenticated = True }
-                        Cmd.none
+                -----------------------------------------
+                -- 🌏
+                -----------------------------------------
+                Webnative (Initialisation state) ->
+                    ( { m | authenticated = Webnative.isAuthenticated state }, Cmd.none )
 
-                Ok ( _, _, Initialisation (Continuation _) ) ->
-                    Tuple.pair
-                        { m | authenticated = True }
-                        Cmd.none
+                Webnative (Webnative.NoArtifact _) ->
+                    ( m, Cmd.none )
 
-                _ ->
+                -----------------------------------------
+                -- 💾
+                -----------------------------------------
+                Wnfs Query (Utf8Content string) ->
+                    ( m, Cmd.none )
+
+                Wnfs Query _ ->
+                    ( m, Cmd.none )
+
+                -----------------------------------------
+                -- 🥵
+                -----------------------------------------
+                WnfsError err ->
+                    let
+                        _ =
+                            Debug.todo (Wnfs.error err)
+                    in
+                    ( m
+                    , Cmd.none
+                    )
+
+                WebnativeError err ->
+                    let
+                        _ =
+                            Debug.todo (Webnative.error err)
+                    in
                     ( m
                     , Cmd.none
                     )
