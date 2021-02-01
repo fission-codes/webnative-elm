@@ -1,5 +1,10 @@
 # Changelog
 
+### 4.0.0-2 (NPM)
+
+- Expose `processRequest` on the javascript side, in case you want to set up the incoming port yourself.
+
+
 ### 4.0.0
 
 - Improved the return value of `Webnative.decodeResponse`

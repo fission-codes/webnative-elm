@@ -20,6 +20,17 @@ const DEFAULT_PORT_NAMES = {
 
 
     /**
+     * Handle request.
+     */
+    exports.processRequest = function(request, elmApp, getFs = builtInGetFs, portNames = DEFAULT_PORT_NAMES) {
+      switch (request.context) {
+        case "WEBNATIVE": return webnativeRequest(elmApp, portNames, request)
+        case "WNFS": return wnfsRequest(elmApp, getFs, portNames, request)
+      }
+    }
+
+
+    /**
      * Setup the ports for our Elm app.
      */
     exports.setup = function (elmApp, getFs = builtInGetFs, portNames = DEFAULT_PORT_NAMES) {
@@ -29,10 +40,7 @@ const DEFAULT_PORT_NAMES = {
       }
 
       elmApp.ports[portNames.incoming].subscribe(request => {
-        switch (request.context) {
-          case "WEBNATIVE": return webnativeRequest(elmApp, portNames, request)
-          case "WNFS": return wnfsRequest(elmApp, getFs, portNames, request)
-        }
+        exports.processRequest(request, elmApp, getFs, portNames)
       })
     }
 
