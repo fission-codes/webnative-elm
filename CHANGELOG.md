@@ -1,5 +1,11 @@
 # Changelog
 
+### 4.0.0-3 (NPM)
+
+- Don't try to send response to Elm if the port is not defined.
+- Rename `processRequest` to `request`.
+
+
 ### 4.0.0-2 (NPM)
 
 - Expose `processRequest` on the javascript side, in case you want to set up the incoming port yourself.

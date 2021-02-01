@@ -34,11 +34,9 @@ port webnativeResponse : (Webnative.Response -> msg) -> Sub msg
 Then import the javascript portion of this library to connect up the ports.
 
 ```js
-import * as webnative from "webnative"
 import * as webnativeElm from "webnative-elm"
 
 // elmApp = Elm.Main.init()
-
 webnativeElm.setup(elmApp)
 ```
 
