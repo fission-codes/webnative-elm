@@ -341,6 +341,8 @@ And then in `update` use this function.
         -----------------------------------------
         -- 🥵
         -----------------------------------------
+        -- Do something with the errors,
+        -- here we cast them to strings
         WebnativeError err -> Webnative.error err
         WnfsError err -> Wnfs.error err
 

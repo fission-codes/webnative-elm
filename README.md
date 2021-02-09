@@ -126,6 +126,8 @@ update msg model =
         -----------------------------------------
         -- 🥵
         -----------------------------------------
+        -- Do something with the errors,
+        -- here we cast them to strings
         WebnativeError err -> Webnative.error err
         WnfsError err -> Wnfs.error err
 
