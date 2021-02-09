@@ -43,7 +43,7 @@ webnativeElm.setup(elmApp)
 Once we have that setup, we can write our webnative Elm code.
 
 ```elm
-import Webnative exposing (Artifact(..), Context(..))
+import Webnative exposing (Artifact(..), DecodedResponse(..))
 import Wnfs
 
 
@@ -180,7 +180,7 @@ tagFromString string =
 You can chain webnative commands in Elm by providing a tag, which is then attached to the response. In the following example I have a custom type for my tags, which I then encode/decode to/from a string.
 
 ```elm
-import Webnative exposing (Context(..))
+import Webnative exposing (DecodedResponse(..))
 import Wnfs
 
 type Tag = Mutation | PointerUpdated

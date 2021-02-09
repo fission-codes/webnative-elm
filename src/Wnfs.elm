@@ -190,7 +190,7 @@ mv base { from, to, tag } =
 
 {-| Publish your changes to your filesystem.
 **📢 You should run this after doing mutations.**
-See [README](../) examples for more info.
+See [README](../latest/) examples for more info.
 -}
 publish : { tag : String } -> Request
 publish { tag } =

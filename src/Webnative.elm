@@ -222,7 +222,7 @@ Check if we're authenticated, process any lobby query-parameters present in the 
 See `loadFileSystem` if you want to load the user's filesystem yourself.
 **NOTE**, this only works on the main/ui thread, as it uses `window.location`.
 
-See the [README](../) for an example.
+See the [README](../latest/) for an example.
 
 -}
 init : Permissions -> Request
@@ -344,7 +344,7 @@ And then in `update` use this function.
         WebnativeError err -> Webnative.error err
         WnfsError err -> Wnfs.error err
 
-See the [README](../) for the full example.
+See the [README](../latest/) for the full example.
 
 -}
 decodeResponse :
