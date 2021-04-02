@@ -1,5 +1,13 @@
 # Changelog
 
+### 5.0.0
+
+- Fixed typo `loadFilesystem` should be `loadFileSystem`
+- Export `defaultInitOptions`
+- Show error if webnative failed to load
+- Return the `getFs` and `portNames` used in the `setup` and `request` javascript functions.
+
+
 ### 4.0.0-3 (NPM)
 
 - Don't try to send response to Elm if the port is not defined.
