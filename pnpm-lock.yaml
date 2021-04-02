@@ -1,5 +1,5 @@
 devDependencies:
-  webnative: 0.21.3
+  webnative: 0.23.2
 lockfileVersion: 5.2
 packages:
   /@multiformats/base-x/4.0.1:
@@ -100,7 +100,7 @@ packages:
     dependencies:
       multibase: 3.1.0
       multicodec: 2.1.0
-      multihashes: 3.1.0
+      multihashes: 3.1.2
       uint8arrays: 2.0.5
     dev: true
     engines:
@@ -441,17 +441,6 @@ packages:
     dev: true
     resolution:
       integrity: sha512-7AYpK/avswOWvnqQ9/jOkQCS7Fp4aKxw5ojvn5gyK2VQTZz3YVXeLMzoIZDBy745JSfJMXkTS0ptnHci5Mt1mA==
-  /multihashes/3.1.0:
-    dependencies:
-      multibase: 3.1.0
-      uint8arrays: 1.1.0
-      varint: 6.0.0
-    dev: true
-    engines:
-      node: '>=10.0.0'
-      npm: '>=6.0.0'
-    resolution:
-      integrity: sha512-snU+w6aZy5bTrrqIHW3wkT0MfHmxcpOsaVNJt0NzUnseksbjFDVUZjSmhDMAVOVnIdLMS7xHjo55pKlBIGmC3g==
   /multihashes/3.1.2:
     dependencies:
       multibase: 3.1.0
@@ -468,7 +457,7 @@ packages:
       blakejs: 1.1.0
       err-code: 2.0.3
       js-sha3: 0.8.0
-      multihashes: 3.1.0
+      multihashes: 3.1.2
       murmurhash3js-revisited: 3.0.0
       uint8arrays: 1.1.0
     dev: true
@@ -674,7 +663,7 @@ packages:
     dev: true
     resolution:
       integrity: sha512-26wEnRPEFAc5d5lmH1Q/DuvWEYsRF1D2alX2jlKpdmqv7cj+BbANL7Xlcl9r4s72Eg9kItZa9RWVbBMC9dMv4w==
-  /webnative/0.21.3:
+  /webnative/0.23.2:
     dependencies:
       base58-universal: 1.0.0
       borc: 2.1.2
@@ -692,7 +681,7 @@ packages:
     engines:
       node: '>=10.21.0'
     resolution:
-      integrity: sha512-kaVLPVoQEnB4/ERoBWkwgk7JGG/lFLNDizSDDxXMsZx/tYVa3xHFQBw61XU9BDgLyfpAanxH3ZCdncIiO8kvgA==
+      integrity: sha512-PHd0p41C7AWGpcf95oDLA41qG2nO4zythePT+C3ymQh2j0gsVN6HsQme0puPjK9g/PYAZaaoeC538T33yvDTWQ==
   /xxhashjs/0.2.2:
     dependencies:
       cuint: 0.2.2
@@ -725,4 +714,4 @@ packages:
       tarball: 'https://ipfs.runfission.com/ipfs/bafybeigx6q4aezve7my76s5vvfuiinbxtepapqvmjf2jbgrozrut6cjape/p/ipfs-message-port-protocol.tar.gz'
     version: 0.6.0-fission
 specifiers:
-  webnative: ^0.21.3
+  webnative: ^0.23.2
