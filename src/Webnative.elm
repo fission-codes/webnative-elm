@@ -1,5 +1,5 @@
 module Webnative exposing
-    ( init, InitOptions, initWithOptions, initialise, initialize
+    ( init, initWithOptions, InitOptions, defaultInitOptions, initialise, initialize
     , decodeResponse, DecodedResponse(..), Artifact(..), NoArtifact(..), Request, Response, Error(..), error
     , redirectToLobby, RedirectTo(..), AppPermissions, FileSystemPermissions, Permissions
     , isAuthenticated, State(..), AuthSucceededState, AuthCancelledState, ContinuationState
@@ -18,7 +18,7 @@ module Webnative exposing
 
 # Getting Started
 
-@docs init, InitOptions, initWithOptions, initialise, initialize
+@docs init, initWithOptions, InitOptions, defaultInitOptions, initialise, initialize
 
 
 # Ports
@@ -117,6 +117,11 @@ type alias FileSystemPermissions =
 
 
 {-| Options for `initWithOptions`.
+
+Setting `autoRemoveUrlParams` to `True` causes webnative to automatically remove the query parameters from the lobby.
+
+Setting `loadFileSystem` to `False` disables the automatic loading of the filesystem during `init`.
+
 -}
 type alias InitOptions =
     { autoRemoveUrlParams : Bool
