@@ -19,6 +19,10 @@ const DEFAULT_PORT_NAMES = {
     const builtInGetFs = () => fs
 
 
+    // Validate presence of webnative
+    if (!webnative) throw new Error("Failed to load webnative")
+
+
     /**
      * Handle request.
      */
