@@ -31,6 +31,8 @@ const DEFAULT_PORT_NAMES = {
         case "WEBNATIVE": return webnativeRequest(elmApp, portNames, request)
         case "WNFS": return wnfsRequest(elmApp, getFs, portNames, request)
       }
+
+      return { getFs: getFs, portNames: portNames }
     }
 
 
@@ -50,6 +52,8 @@ const DEFAULT_PORT_NAMES = {
       elmApp.ports[portNames.incoming].subscribe(request => {
         exports.request(request, elmApp, getFs, portNames)
       })
+
+      return { getFs: getFs, portNames: portNames }
     }
 
 
