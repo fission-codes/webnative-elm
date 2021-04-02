@@ -3,7 +3,7 @@ module Webnative exposing
     , decodeResponse, DecodedResponse(..), Artifact(..), NoArtifact(..), Request, Response, Error(..), error
     , redirectToLobby, RedirectTo(..), AppPermissions, FileSystemPermissions, Permissions
     , isAuthenticated, State(..), AuthSucceededState, AuthCancelledState, ContinuationState
-    , loadFilesystem
+    , loadFileSystem
     )
 
 {-| Interface for [webnative](https://github.com/fission-suite/webnative#readme).
@@ -40,7 +40,7 @@ Data flowing through the ports. See `🚀` in the `decodeResponse` example on ho
 
 # Filesystem
 
-@docs loadFilesystem
+@docs loadFileSystem
 
 -}
 
@@ -70,7 +70,7 @@ type Artifact
 Part of the `Artifact` type.
 -}
 type NoArtifact
-    = LoadedFilesystemManually
+    = LoadedFileSystemManually
     | RedirectingToLobby
 
 
@@ -120,7 +120,7 @@ type alias FileSystemPermissions =
 -}
 type alias InitOptions =
     { autoRemoveUrlParams : Bool
-    , loadFilesystem : Bool
+    , loadFileSystem : Bool
     }
 
 
@@ -129,7 +129,7 @@ type alias InitOptions =
 defaultInitOptions : InitOptions
 defaultInitOptions =
     { autoRemoveUrlParams = True
-    , loadFilesystem = True
+    , loadFileSystem = True
     }
 
 
@@ -242,8 +242,8 @@ initWithOptions options permissions =
             [ ( "autoRemoveUrlParams"
               , Json.bool options.autoRemoveUrlParams
               )
-            , ( "loadFilesystem"
-              , Json.bool options.loadFilesystem
+            , ( "loadFileSystem"
+              , Json.bool options.loadFileSystem
               )
             , ( "permissions"
               , Maybe.unwrap Json.null encodePermissions (flattenPermissions permissions)
@@ -269,11 +269,11 @@ initialize =
 
 {-| Load in the filesystem manually.
 -}
-loadFilesystem : Permissions -> Request
-loadFilesystem permissions =
+loadFileSystem : Permissions -> Request
+loadFileSystem permissions =
     { context = context
     , tag = ""
-    , method = Webnative.methodToString LoadFilesystem
+    , method = Webnative.methodToString LoadFileSystem
     , arguments =
         [ Maybe.unwrap
             Json.null
@@ -480,8 +480,8 @@ decodeWebnativeResponse response =
                         Initialise ->
                             Json.Decode.map Initialisation stateDecoder
 
-                        LoadFilesystem ->
-                            Json.Decode.succeed (NoArtifact LoadedFilesystemManually)
+                        LoadFileSystem ->
+                            Json.Decode.succeed (NoArtifact LoadedFileSystemManually)
 
                         RedirectToLobby ->
                             Json.Decode.succeed (NoArtifact RedirectingToLobby)

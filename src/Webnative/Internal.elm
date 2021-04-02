@@ -5,7 +5,7 @@ module Webnative.Internal exposing (..)
 
 type Method
     = Initialise
-    | LoadFilesystem
+    | LoadFileSystem
     | RedirectToLobby
 
 
@@ -15,8 +15,8 @@ methodFromString string =
         "initialise" ->
             Just Initialise
 
-        "loadFilesystem" ->
-            Just LoadFilesystem
+        "loadFileSystem" ->
+            Just LoadFileSystem
 
         "redirectToLobby" ->
             Just RedirectToLobby
@@ -31,8 +31,8 @@ methodToString method =
         Initialise ->
             "initialise"
 
-        LoadFilesystem ->
-            "loadFilesystem"
+        LoadFileSystem ->
+            "loadFileSystem"
 
         RedirectToLobby ->
             "redirectToLobby"

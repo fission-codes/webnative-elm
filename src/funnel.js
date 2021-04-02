@@ -60,7 +60,7 @@ const DEFAULT_PORT_NAMES = {
         switch (request.method) {
           // Don't send result to Elm
           case "redirectToLobby": return;
-          case "loadFilesystem": fs = result; break;
+          case "loadFileSystem": fs = result; break;
 
           // Do something, but also report back to Elm
           case "initialise": fs = result.fs;

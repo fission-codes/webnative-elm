@@ -225,17 +225,17 @@ You may want to do this when working with a web worker.
 import Webnative exposing (defaultInitOptions)
 
 Webnative.initWithOptions
-  { defaultInitOptions | loadFilesystem = False }
+  { defaultInitOptions | loadFileSystem = False }
 ```
 
 And then load it either in Elm or in javascript.
 
 ```elm
-Webnative.loadFilesystem permissions
+Webnative.loadFileSystem permissions
 ```
 
 ```js
-const fs = await webnative.loadFilesystem(permissions)
+const fs = await webnative.loadFileSystem(permissions)
 webnativeElm.setup(elmApp, () => fs)
 ```
 
