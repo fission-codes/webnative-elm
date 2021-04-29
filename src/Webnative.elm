@@ -51,7 +51,8 @@ import Json.Encode as Json
 import Maybe.Extra as Maybe
 import Url exposing (Url)
 import Webnative.Internal as Webnative exposing (..)
-import Wnfs exposing (Artifact(..), Kind(..))
+import Webnative.Path exposing (Kind(..))
+import Wnfs exposing (Artifact(..))
 import Wnfs.Internal as Wnfs exposing (..)
 
 

@@ -3,7 +3,7 @@ module Wnfs exposing
     , mkdir, mv, rm, write, writeUtf8
     , exists, ls, read, readUtf8
     , add, cat
-    , Base(..), Attributes, Artifact(..), Kind(..), Entry
+    , Base(..), Attributes, Artifact(..), Entry
     , Error(..), error
     )
 
@@ -45,6 +45,7 @@ import Bytes exposing (Bytes)
 import Bytes.Encode
 import Json.Decode
 import Json.Encode as Json
+import Webnative.Path as Path exposing (Directory, File, Kind(..), Path)
 import Wnfs.Internal exposing (..)
 
 
@@ -81,13 +82,6 @@ type Error
     | JavascriptError String
 
 
-{-| Kind of `Entry`.
--}
-type Kind
-    = Directory
-    | File
-
-
 {-| Application permissions.
 -}
 type alias AppPermissions =
@@ -98,8 +92,8 @@ type alias AppPermissions =
 
 {-| WNFS action attributes.
 -}
-type alias Attributes =
-    { path : List String
+type alias Attributes pathKind =
+    { path : Path pathKind
     , tag : String
     }
 
@@ -136,45 +130,84 @@ type alias Response =
 
 
 
--- 📣
-
-
-{-| Alias for `write`.
--}
-add : Base -> Attributes -> Bytes -> Request
-add =
-    write
-
-
-{-| Alias for `read`.
--}
-cat : Base -> Attributes -> Request
-cat =
-    read
-
-
-{-| Check if something exists in the filesystem.
--}
-exists : Base -> Attributes -> Request
-exists =
-    wnfs Exists
+-- 📣  DIRECTORIES
 
 
 {-| List a directory.
 -}
-ls : Base -> Attributes -> Request
+ls : Base -> Attributes Directory -> Request
 ls =
     wnfs Ls
 
 
 {-| Create a directory.
 -}
-mkdir : Base -> Attributes -> Request
+mkdir : Base -> Attributes Directory -> Request
 mkdir =
     wnfs Mkdir
 
 
-{-| Move.
+
+-- 📣  FILES
+
+
+{-| Alias for `write`.
+-}
+add : Base -> Attributes File -> Bytes -> Request
+add =
+    write
+
+
+{-| Alias for `read`.
+-}
+cat : Base -> Attributes File -> Request
+cat =
+    read
+
+
+{-| Read a file from the filesystem in the form of `Bytes`.
+-}
+read : Base -> Attributes File -> Request
+read =
+    wnfs Read
+
+
+{-| Read a file from the filesystem in the form of a `String`.
+-}
+readUtf8 : Base -> Attributes File -> Request
+readUtf8 =
+    wnfs ReadUtf8
+
+
+{-| Write to a file using `Bytes`.
+-}
+write : Base -> Attributes File -> Bytes -> Request
+write a b c =
+    wnfsWithBytes Write a b c
+
+
+{-| Write to a file using a `String`.
+-}
+writeUtf8 : Base -> Attributes File -> String -> Request
+writeUtf8 a b c =
+    c
+        |> Bytes.Encode.string
+        |> Bytes.Encode.encode
+        |> wnfsWithBytes Write a b
+
+
+
+-- 📣  DIRECTORIES & FILES
+
+
+{-| Check if something exists.
+-}
+exists : Base -> Attributes a -> Request
+exists =
+    wnfs Exists
+
+
+{-| Move something from one location to another.
 -}
 mv : Base -> { from : List String, to : List String, tag : String } -> Request
 mv base { from, to, tag } =
@@ -182,10 +215,24 @@ mv base { from, to, tag } =
     , tag = tag
     , method = methodToString Mv
     , arguments =
-        [ Json.string (buildPath base from)
-        , Json.string (buildPath base to)
-        ]
+        -- TODO
+        []
+
+    -- [ Json.string (buildPath base from)
+    -- , Json.string (buildPath base to)
+    -- ]
     }
+
+
+{-| Remove something from the filesystem.
+-}
+rm : Base -> Attributes a -> Request
+rm =
+    wnfs Rm
+
+
+
+-- 📣
 
 
 {-| Publish your changes to your filesystem.
@@ -199,44 +246,6 @@ publish { tag } =
     , method = methodToString Publish
     , arguments = []
     }
-
-
-{-| Read something from the filesystem in the form of `Bytes`.
--}
-read : Base -> Attributes -> Request
-read =
-    wnfs Read
-
-
-{-| Read something from the filesystem in the form of a `String`.
--}
-readUtf8 : Base -> Attributes -> Request
-readUtf8 =
-    wnfs ReadUtf8
-
-
-{-| Remove.
--}
-rm : Base -> Attributes -> Request
-rm =
-    wnfs Rm
-
-
-{-| Write to the filesystem using `Bytes`.
--}
-write : Base -> Attributes -> Bytes -> Request
-write a b c =
-    wnfsWithBytes Write a b c
-
-
-{-| Write to the filesystem using a `String`.
--}
-writeUtf8 : Base -> Attributes -> String -> Request
-writeUtf8 a b c =
-    c
-        |> Bytes.Encode.string
-        |> Bytes.Encode.encode
-        |> wnfsWithBytes Write a b
 
 
 
@@ -270,21 +279,21 @@ context =
     "WNFS"
 
 
-makeRequest : Method -> Base -> List String -> String -> List Json.Value -> Request
-makeRequest method base segments tag arguments =
+makeRequest : Method -> Base -> Path k -> String -> List Json.Value -> Request
+makeRequest method base path tag arguments =
     { context = context
     , tag = tag
     , method = methodToString method
-    , arguments = Json.string (buildPath base segments) :: arguments
+    , arguments = Json.string (buildPath base path) :: arguments
     }
 
 
-wnfs : Method -> Base -> Attributes -> Request
+wnfs : Method -> Base -> Attributes k -> Request
 wnfs method base { path, tag } =
     makeRequest method base path tag []
 
 
-wnfsWithBytes : Method -> Base -> Attributes -> Bytes -> Request
+wnfsWithBytes : Method -> Base -> Attributes k -> Bytes -> Request
 wnfsWithBytes method base { path, tag } bytes =
     makeRequest method base path tag [ encodeBytes bytes ]
 
@@ -293,8 +302,8 @@ wnfsWithBytes method base { path, tag } bytes =
 -- ㊙️  ⌘  PATH
 
 
-buildPath : Base -> List String -> String
-buildPath base segments =
+buildPath : Base -> Path k -> String
+buildPath base path =
     String.append
         (case base of
             AppData { creator, name } ->
@@ -308,5 +317,5 @@ buildPath base segments =
         )
         (String.join
             "/"
-            segments
+            (Path.unwrap path)
         )
