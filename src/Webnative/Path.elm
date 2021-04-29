@@ -1,9 +1,31 @@
-module Webnative.Path exposing (Directory, Encapsulated, File, Kind(..), Path, directory, file, fromPosix, kind, toPosix, unwrap)
+module Webnative.Path exposing
+    ( Path, Directory, File, Encapsulated, Kind(..)
+    , directory, file
+    , fromPosix, toPosix
+    , kind, unwrap
+    )
 
 {-|
 
 
 # Paths
+
+@docs Path, Directory, File, Encapsulated, Kind
+
+
+# Creation
+
+@docs directory, file
+
+
+# POSIX
+
+@docs fromPosix, toPosix
+
+
+# Encapsulation
+
+@docs encapsulate, forPermissions
 
 -}
 
@@ -11,12 +33,24 @@ module Webnative.Path exposing (Directory, Encapsulated, File, Kind(..), Path, d
 
 
 {-| Path type.
+
+This is used with the [phantom types](#phantom-types).
+
+    ```elm
+    directoryPath : Path Directory
+    filePath : Path File
+    encapsulatedPath : Path Encapsulated
+    ```
+
 -}
 type Path t
     = Path Kind (List String)
 
 
 {-| Kind.
+
+Used to co
+
 -}
 type Kind
     = Directory
@@ -49,11 +83,25 @@ type Encapsulated
 -- CREATION
 
 
+{-| Create a directory path.
+
+    ```elm
+    directory [ "Audio", "Playlists" ]
+    ```
+
+-}
 directory : List String -> Path Directory
 directory =
     Path Directory
 
 
+{-| Create a file path.
+
+    ```elm
+    file [ "Document", "invoice.pdf" ]
+    ```
+
+-}
 file : List String -> Path File
 file =
     Path File
@@ -100,6 +148,8 @@ toPosix (Path k parts) =
 -- ENCAPSULATE
 
 
+{-| Encapsulate a path.
+-}
 encapsulate : Path t -> Path Encapsulated
 encapsulate (Path k p) =
     Path k p

@@ -110,6 +110,19 @@ type alias AppPermissions =
 
 
 {-| Filesystem permissions.
+
+    ```elm
+    import Webnative.Path as Path
+
+    { private =
+        [ Path.encapsulate (Path.directory [ "Audio", "Mixtapes" ])
+        , Path.encapsulate (Path.directory [ "Audio", "Playlists" ])
+        ]
+    , public =
+        []
+    }
+    ```
+
 -}
 type alias FileSystemPermissions =
     { private : List (Path Encapsulated)
@@ -140,6 +153,7 @@ defaultInitOptions =
 
 
 {-| Permissions to ask the user.
+See [`AppPermissions`](#AppPermissions) and [`FileSystemPermissions`](#FileSystemPermissions) on how to use these.
 -}
 type alias Permissions =
     { app : Maybe AppPermissions

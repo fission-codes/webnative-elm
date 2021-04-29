@@ -44,6 +44,7 @@ Once we have that setup, we can write our webnative Elm code.
 
 ```elm
 import Webnative exposing (Artifact(..), DecodedResponse(..))
+import Webnative.Path as Path
 import Wnfs
 
 
@@ -134,7 +135,7 @@ update msg model =
     --
 
     ReadWnfsFile ->
-      { path = [ "hello.txt" ]
+      { path = Path.file [ "hello.txt" ]
       , tag = tagToString ReadHelloTxt
       }
         |> Wnfs.readUtf8 base
@@ -144,7 +145,7 @@ update msg model =
     WriteToWnfsFile ->
       "👋"
         |> Wnfs.writeUtf8 base
-          { path = [ "hello.txt" ]
+          { path = Path.file [ "hello.txt" ]
           , tag = tagToString Mutation
           }
         |> Ports.webnativeRequest
@@ -183,13 +184,14 @@ You can chain webnative commands in Elm by providing a tag, which is then attach
 
 ```elm
 import Webnative exposing (DecodedResponse(..))
+import Webnative.Path as Path
 import Wnfs
 
 type Tag = Mutation | PointerUpdated
 
 -- Request
 Wnfs.writeUtf8 base
-  { path = [ "hello.txt" ]
+  { path = Path.file [ "hello.txt" ]
   , tag = tagToString Mutation
   }
 
