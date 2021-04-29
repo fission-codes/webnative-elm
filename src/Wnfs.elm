@@ -209,18 +209,15 @@ exists =
 
 {-| Move something from one location to another.
 -}
-mv : Base -> { from : List String, to : List String, tag : String } -> Request
+mv : Base -> { from : Path t, to : Path t, tag : String } -> Request
 mv base { from, to, tag } =
     { context = context
     , tag = tag
     , method = methodToString Mv
     , arguments =
-        -- TODO
-        []
-
-    -- [ Json.string (buildPath base from)
-    -- , Json.string (buildPath base to)
-    -- ]
+        [ Json.string (buildPath base from)
+        , Json.string (buildPath base to)
+        ]
     }
 
 
@@ -304,18 +301,18 @@ wnfsWithBytes method base { path, tag } bytes =
 
 buildPath : Base -> Path k -> String
 buildPath base path =
-    String.append
-        (case base of
-            AppData { creator, name } ->
-                "/private/Apps/" ++ creator ++ "/" ++ name ++ "/"
+    path
+        |> Path.unwrap
+        |> List.append
+            (case base of
+                AppData { creator, name } ->
+                    [ "private", "Apps", creator, name ]
 
-            Private ->
-                "/private/"
+                Private ->
+                    [ "private" ]
 
-            Public ->
-                "/public/"
-        )
-        (String.join
-            "/"
-            (Path.unwrap path)
-        )
+                Public ->
+                    [ "public" ]
+            )
+        |> Path.directory
+        |> Path.toPosix

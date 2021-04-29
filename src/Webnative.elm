@@ -51,7 +51,7 @@ import Json.Encode as Json
 import Maybe.Extra as Maybe
 import Url exposing (Url)
 import Webnative.Internal as Webnative exposing (..)
-import Webnative.Path exposing (Kind(..))
+import Webnative.Path as Path exposing (Encapsulated, Kind(..), Path)
 import Wnfs exposing (Artifact(..))
 import Wnfs.Internal as Wnfs exposing (..)
 
@@ -112,8 +112,8 @@ type alias AppPermissions =
 {-| Filesystem permissions.
 -}
 type alias FileSystemPermissions =
-    { privatePaths : List String
-    , publicPaths : List String
+    { private : List (Path Encapsulated)
+    , public : List (Path Encapsulated)
     }
 
 
@@ -452,10 +452,10 @@ encodeAppPermissions { creator, name } =
 
 
 encodeFileSystemPermissions : FileSystemPermissions -> Json.Value
-encodeFileSystemPermissions { privatePaths, publicPaths } =
+encodeFileSystemPermissions { private, public } =
     Json.object
-        [ ( "privatePaths", Json.list Json.string privatePaths )
-        , ( "publicPaths", Json.list Json.string publicPaths )
+        [ ( "private", Json.list (Path.toPosix >> Json.string) private )
+        , ( "public", Json.list (Path.toPosix >> Json.string) public )
         ]
 
 

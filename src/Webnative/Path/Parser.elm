@@ -1,13 +1,20 @@
-module Webnative.Path.Parser exposing (..)
+module Webnative.Path.Encapsulated exposing (..)
 
-import Webnative.Path as Path exposing (Directory, File, Kind(..), Parsed, Path, directory, file)
+{-|
+
+
+# Encapsulated Paths
+
+-}
+
+import Webnative.Path as Path exposing (Directory, Encapsulated, File, Kind(..), Path, directory, file)
 
 
 
 -- TRANSFORMERS
 
 
-toDirectory : Path Parsed -> Result String (Path Directory)
+toDirectory : Path Encapsulated -> Result String (Path Directory)
 toDirectory path =
     case Path.kind path of
         Directory ->
@@ -17,14 +24,14 @@ toDirectory path =
                 |> Ok
 
         File ->
-            Err "Parsed path is a File path, expected Directory"
+            Err "Encapsulated path is a File path, expected Directory"
 
 
-toFile : Path Parsed -> Result String (Path File)
+toFile : Path Encapsulated -> Result String (Path File)
 toFile path =
     case Path.kind path of
         Directory ->
-            Err "Parsed path is a Directory path, expected File"
+            Err "Encapsulated path is a Directory path, expected File"
 
         File ->
             path

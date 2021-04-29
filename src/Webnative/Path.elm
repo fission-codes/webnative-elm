@@ -1,9 +1,9 @@
-module Webnative.Path exposing (Directory, File, Kind(..), Parsed, Path, directory, file, fromPosix, kind, toPosix, unwrap)
+module Webnative.Path exposing (Directory, Encapsulated, File, Kind(..), Path, directory, file, fromPosix, kind, toPosix, unwrap)
 
 {-|
 
 
-# Path
+# Paths
 
 -}
 
@@ -39,10 +39,10 @@ type File
     = File_
 
 
-{-| 👻 Parsed
+{-| 👻 Encapsulated
 -}
-type Parsed
-    = Parsed_
+type Encapsulated
+    = Encapsulated_
 
 
 
@@ -63,7 +63,7 @@ file =
 -- POSIX
 
 
-fromPosix : String -> Path Parsed
+fromPosix : String -> Path Encapsulated
 fromPosix string =
     string
         |> (\s ->
@@ -94,6 +94,15 @@ toPosix (Path k parts) =
 
         File ->
             joined
+
+
+
+-- ENCAPSULATE
+
+
+encapsulate : Path t -> Path Encapsulated
+encapsulate (Path k p) =
+    Path k p
 
 
 
