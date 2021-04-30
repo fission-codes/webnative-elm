@@ -50,24 +50,20 @@ import Json.Encode as Json
 
 {-| Path type.
 
-This is used with the [phantom types](#phantom-types).
+This is used with the [phantom 👻 types](#phantom-types).
 
-    ```elm
     directoryPath : Path Directory
+
     filePath : Path File
+
     encapsulatedPath : Path Encapsulated
-    ```
 
 -}
 type Path t
     = Path Kind (List String)
 
 
-{-| Kind.
-
-Used to co
-
--}
+{-| -}
 type Kind
     = Directory
     | File
@@ -101,9 +97,7 @@ type Encapsulated
 
 {-| Create a directory path.
 
-    ```elm
     directory [ "Audio", "Playlists" ]
-    ```
 
 -}
 directory : List String -> Path Directory
@@ -113,9 +107,7 @@ directory =
 
 {-| Create a file path.
 
-    ```elm
     file [ "Document", "invoice.pdf" ]
-    ```
 
 -}
 file : List String -> Path File

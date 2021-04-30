@@ -1,9 +1,11 @@
-module Webnative.Path.Encapsulated exposing (..)
+module Webnative.Path.Encapsulated exposing (toDirectory, toFile)
 
 {-|
 
 
 # Encapsulated Paths
+
+@docs toDirectory, toFile
 
 -}
 

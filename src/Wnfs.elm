@@ -32,7 +32,7 @@ module Wnfs exposing
 
 # Requests & Responses
 
-@docs Base, Attributes, Artifact, Kind, Entry
+@docs Base, Attributes, Artifact, Entry
 
 
 # Errors

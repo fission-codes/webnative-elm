@@ -1,5 +1,12 @@
 # Changelog
 
+### 6.0.0
+
+__⚠️ Requires webnative 0.24 or later!__
+
+New `Path` type, along with a new `Path` module and helper functions.
+
+
 ### 5.0.0
 
 - Fixed typo `loadFilesystem` should be `loadFileSystem`
