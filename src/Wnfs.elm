@@ -215,8 +215,8 @@ mv base { from, to, tag } =
     , tag = tag
     , method = methodToString Mv
     , arguments =
-        [ Json.string (buildPath base from)
-        , Json.string (buildPath base to)
+        [ encodePath base from
+        , encodePath base to
         ]
     }
 
@@ -281,7 +281,7 @@ makeRequest method base path tag arguments =
     { context = context
     , tag = tag
     , method = methodToString method
-    , arguments = Json.string (buildPath base path) :: arguments
+    , arguments = encodePath base path :: arguments
     }
 
 
@@ -299,8 +299,8 @@ wnfsWithBytes method base { path, tag } bytes =
 -- ㊙️  ⌘  PATH
 
 
-buildPath : Base -> Path k -> String
-buildPath base path =
+encodePath : Base -> Path k -> Json.Value
+encodePath base path =
     path
         |> Path.unwrap
         |> List.append
@@ -315,4 +315,4 @@ buildPath base path =
                     [ "public" ]
             )
         |> Path.directory
-        |> Path.toPosix
+        |> Path.toTypescriptFormat
