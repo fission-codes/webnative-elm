@@ -2,7 +2,9 @@ module Webnative.Path exposing
     ( Path, Directory, File, Encapsulated, Kind(..)
     , directory, file
     , fromPosix, toPosix
+    , encapsulate
     , kind, unwrap
+    , toTypescriptFormat
     )
 
 {-|
@@ -25,9 +27,23 @@ module Webnative.Path exposing
 
 # Encapsulation
 
-@docs encapsulate, forPermissions
+@docs encapsulate
+
+
+# Functions
+
+@docs kind, unwrap
+
+
+# Miscellaneous
+
+@docs toTypescriptFormat
 
 -}
+
+import Json.Encode as Json
+
+
 
 -- 🌳
 
@@ -111,6 +127,23 @@ file =
 -- POSIX
 
 
+{-| Convert a POSIX formatted string to a path.
+
+This will return a `Encapsulated` path. To get a path of the type `Path Directory` or `Path File`, use the functions in the `Webnative.Path.Encapsulated` module.
+
+    >>> import Webnative.Path.Encapsulated
+
+    >>> "foo/bar/"
+    ..>   |> fromPosix
+    ..>   |> Webnative.Path.Encapsulated.toDirectory
+    Ok (directory [ "foo", "bar" ])
+
+    >>> "foo/bar"
+    ..>   |> fromPosix
+    ..>   |> Webnative.Path.Encapsulated.toFile
+    Ok (file [ "foo", "bar" ])
+
+-}
 fromPosix : String -> Path Encapsulated
 fromPosix string =
     string
@@ -130,6 +163,15 @@ fromPosix string =
            )
 
 
+{-| Convert a path to the POSIX format.
+
+    >>> toPosix (directory [ "foo", "bar"])
+    "foo/bar/"
+
+    >>> toPosix (file [ "foo", "bar"])
+    "foo/bar"
+
+-}
 toPosix : Path t -> String
 toPosix (Path k parts) =
     let
@@ -159,11 +201,61 @@ encapsulate (Path k p) =
 -- 🛠
 
 
+{-| Get the path kind.
+
+    >>> kind (directory [])
+    Directory
+
+    >>> kind (file [])
+    File
+
+-}
 kind : Path t -> Kind
 kind (Path k _) =
     k
 
 
+{-| Get the path parts.
+
+    >>> unwrap (directory [ "foo", "bar" ])
+    [ "foo", "bar" ]
+
+    >>> unwrap (file [ "foo", "bar" ])
+    [ "foo", "bar" ]
+
+-}
 unwrap : Path t -> List String
 unwrap (Path _ parts) =
     parts
+
+
+
+-- MISCELLANEOUS
+
+
+{-| Convert to Typescript version of the SDK.
+
+    >>> import Json.Encode
+
+    >>> [ "foo" ] |> directory |> toTypescriptFormat |> Json.Encode.encode 0
+    "{\"directory\":[\"foo\"]}"
+
+    >>> [ "bar" ]
+    ..>   |> file
+    ..>   |> toTypescriptFormat
+    ..>   |> Json.Encode.encode 0
+    "{\"file\":[\"bar\"]}"
+
+-}
+toTypescriptFormat : Path t -> Json.Value
+toTypescriptFormat (Path k p) =
+    Json.object
+        [ ( case k of
+                Directory ->
+                    "directory"
+
+                File ->
+                    "file"
+          , Json.list Json.string p
+          )
+        ]

@@ -6,7 +6,7 @@ module Webnative exposing
     , loadFileSystem
     )
 
-{-| Interface for [webnative](https://github.com/fission-suite/webnative#readme).
+{-| Interface for [webnative](https://github.com/fission-suite/webnative#readme), version `0.24` and up.
 
 1.  [Getting Started](#getting-started)
 2.  [Ports](#ports)
@@ -468,8 +468,8 @@ encodeAppPermissions { creator, name } =
 encodeFileSystemPermissions : FileSystemPermissions -> Json.Value
 encodeFileSystemPermissions { private, public } =
     Json.object
-        [ ( "private", Json.list (Path.toPosix >> Json.string) private )
-        , ( "public", Json.list (Path.toPosix >> Json.string) public )
+        [ ( "private", Json.list Path.toTypescriptFormat private )
+        , ( "public", Json.list Path.toTypescriptFormat public )
         ]
 
 

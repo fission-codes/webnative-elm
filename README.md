@@ -14,9 +14,12 @@ A thin wrapper around [webnative](https://github.com/fission-suite/webnative#rea
 
 # QuickStart
 
-```
+```shell
 elm install fission-suite/webnative-elm
-npm install webnative-elm webnative
+
+# requires webnative version 0.24 or later
+npm install webnative
+npm install webnative-elm
 ```
 
 Setup the necessary ports on your Elm app.
