@@ -40,7 +40,7 @@ Then import the javascript portion of this library to connect up the ports.
 import * as webnativeElm from "webnative-elm"
 
 // elmApp = Elm.Main.init()
-webnativeElm.setup(elmApp)
+webnativeElm.setup({ app: elmApp })
 ```
 
 Once we have that setup, we can write our webnative Elm code.
@@ -241,18 +241,22 @@ Webnative.loadFileSystem permissions
 
 ```js
 const fs = await webnative.loadFileSystem(permissions)
-webnativeElm.setup(elmApp, () => fs)
+webnativeElm.setup({ app: elmApp, getFs: () => fs })
 ```
 
 
 
 # Customisation
 
-You can customise the port names by passing in a third parameter.
+There's various customisation options:
 
 ```js
-webnativeElm.setup(elmApp, undefined, {
-  incoming: "webnativeRequest",
-  outgoing: "webnativeResponse"
+webnativeElm.setup({
+  app: elmApp,
+  portNames: {
+    incoming: "webnativeRequest",
+    outgoing: "webnativeResponse"
+  },
+  webnative: require("webnative")
 })
 ```

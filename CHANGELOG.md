@@ -4,7 +4,8 @@
 
 __⚠️ Requires webnative 0.24 or later!__
 
-New `Path` type, along with a new `Path` module and helper functions.
+- New `Path` type, along with a new `Path` module and helper functions.
+- Refactored javascript side & allowed setting custom webnative factory
 
 
 ### 5.0.0
