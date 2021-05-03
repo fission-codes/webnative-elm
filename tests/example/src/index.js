@@ -7,4 +7,4 @@ const elmApp = Elm.Main.init({
 })
 
 
-webnativeElm.setup(elmApp)
+webnativeElm.setup({ app: elmApp })
