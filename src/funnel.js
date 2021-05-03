@@ -13,23 +13,24 @@ const DEFAULT_PORT_NAMES = {
     factory((root.webnativeElm = {}), root.webnative)
   }
 
-}(typeof self !== "undefined" ? self : this, function (exports, webnative) {
+}(typeof self !== "undefined" ? self : this, function (exports, wn) {
 
     let fs
     const builtInGetFs = () => fs
 
 
-    // Validate presence of webnative
-    if (!webnative) throw new Error("Failed to load webnative")
-
-
     /**
      * Handle request.
      */
-    exports.request = function(request, elmApp, getFs = builtInGetFs, portNames = DEFAULT_PORT_NAMES) {
+    exports.request = function({
+      app,
+      request,
+      getFs = builtInGetFs,
+      portNames = DEFAULT_PORT_NAMES
+    }) {
       switch (request.context) {
-        case "WEBNATIVE": return webnativeRequest(elmApp, portNames, request)
-        case "WNFS": return wnfsRequest(elmApp, getFs, portNames, request)
+        case "WEBNATIVE": return webnativeRequest({ app, portNames, request })
+        case "WNFS": return wnfsRequest({ app, getFs, portNames, request })
       }
 
       return { getFs: getFs, portNames: portNames }
@@ -39,18 +40,31 @@ const DEFAULT_PORT_NAMES = {
     /**
      * Setup the ports for our Elm app.
      */
-    exports.setup = function (elmApp, getFs = builtInGetFs, portNames = DEFAULT_PORT_NAMES) {
-      if (!elmApp.ports || !elmApp.ports[portNames.incoming]) {
+    exports.setup = function ({
+      app,
+      getFs = builtInGetFs,
+      portNames = DEFAULT_PORT_NAMES,
+      webnative
+    }) {
+      if (webnative) {
+        wn = webnative
+      }
+
+      if (!wn) {
+        throw new Error("Failed to load webnative")
+      }
+
+      if (!app.ports || !app.ports[portNames.incoming]) {
         console.warn(`Couldn't find the incoming Elm port for webnative named "${portNames.incoming}". Could be that you haven't used the port yet, dead code elimination.`)
         return
       }
 
-      if (!elmApp.ports[portNames.outgoing]) {
+      if (!app.ports[portNames.outgoing]) {
         console.warn(`Not sending webnative responses back to your Elm app, because the outgoing port named "${portNames.outgoing}" was not found. Could be that you haven't used the port yet, dead code elimination.`)
       }
 
-      elmApp.ports[portNames.incoming].subscribe(request => {
-        exports.request(request, elmApp, getFs, portNames)
+      app.ports[portNames.incoming].subscribe(request => {
+        exports.request({ request, app, getFs, portNames })
       })
 
       return { getFs: getFs, portNames: portNames }
@@ -60,8 +74,10 @@ const DEFAULT_PORT_NAMES = {
     /**
      * Handle webnative request.
      */
-    function webnativeRequest(elmApp, portNames, request) {
-      Promise.resolve(webnative[request.method](
+    function webnativeRequest({
+      app, portNames, request
+    }) {
+      Promise.resolve(wn[request.method](
         ...request.arguments
 
       )).then(result => {
@@ -75,7 +91,7 @@ const DEFAULT_PORT_NAMES = {
 
           // Report back to Elm
           default:
-            if (elmApp.ports[portNames.outgoing]) elmApp.ports[portNames.outgoing].send({
+            if (app.ports[portNames.outgoing]) app.ports[portNames.outgoing].send({
               tag: request.tag,
               error: null,
               method: request.method,
@@ -85,7 +101,7 @@ const DEFAULT_PORT_NAMES = {
         }
 
       }).catch(err => {
-        if (elmApp.ports[portNames.outgoing]) elmApp.ports[portNames.outgoing].send({
+        if (app.ports[portNames.outgoing]) app.ports[portNames.outgoing].send({
           tag: request.tag,
           error: err.message || err,
           method: request.method,
@@ -100,7 +116,9 @@ const DEFAULT_PORT_NAMES = {
     /**
      * Handle WNFS request.
      */
-    function wnfsRequest(elmApp, getFs, portNames, request) {
+    function wnfsRequest({
+      app, getFs, portNames, request
+    }) {
       const method = request.method.replace(/_utf8$/, "")
 
       if (request.method === "write") {
@@ -114,7 +132,7 @@ const DEFAULT_PORT_NAMES = {
         ...request.arguments
 
       )).then(data => {
-        if (elmApp.ports[portNames.outgoing]) elmApp.ports[portNames.outgoing].send({
+        if (app.ports[portNames.outgoing]) app.ports[portNames.outgoing].send({
           tag: request.tag,
           error: null,
           method: request.method,
@@ -123,7 +141,7 @@ const DEFAULT_PORT_NAMES = {
         })
 
       }).catch(err => {
-        if (elmApp.ports[portNames.outgoing]) elmApp.ports[portNames.outgoing].send({
+        if (app.ports[portNames.outgoing]) app.ports[portNames.outgoing].send({
           tag: request.tag,
           error: err.message || err,
           method: request.method,
