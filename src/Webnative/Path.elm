@@ -1,8 +1,8 @@
 module Webnative.Path exposing
     ( Path, Directory, File, Encapsulated, Kind(..)
-    , directory, file
+    , directory, file, root
     , fromPosix, toPosix
-    , encapsulate
+    , encapsulate, forPermissions
     , kind, unwrap
     , toTypescriptFormat
     )
@@ -17,7 +17,7 @@ module Webnative.Path exposing
 
 # Creation
 
-@docs directory, file
+@docs directory, file, root
 
 
 # POSIX
@@ -27,7 +27,7 @@ module Webnative.Path exposing
 
 # Encapsulation
 
-@docs encapsulate
+@docs encapsulate, forPermissions
 
 
 # Functions
@@ -115,6 +115,13 @@ file =
     Path File
 
 
+{-| Root directory.
+-}
+root : Path Directory
+root =
+    directory []
+
+
 
 -- POSIX
 
@@ -187,6 +194,13 @@ toPosix (Path k parts) =
 encapsulate : Path t -> Path Encapsulated
 encapsulate (Path k p) =
     Path k p
+
+
+{-| Alias for [`encapsulate`](#encapsulate)
+-}
+forPermissions : Path t -> Path Encapsulated
+forPermissions =
+    encapsulate
 
 
 

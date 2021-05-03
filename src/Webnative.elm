@@ -115,8 +115,8 @@ type alias AppPermissions =
     import Webnative.Path as Path
 
     { private =
-        [ Path.encapsulate (Path.directory [ "Audio", "Mixtapes" ])
-        , Path.encapsulate (Path.directory [ "Audio", "Playlists" ])
+        [ Path.forPermissions (Path.directory [ "Audio", "Mixtapes" ])
+        , Path.forPermissions (Path.directory [ "Audio", "Playlists" ])
         ]
     , public =
         []
