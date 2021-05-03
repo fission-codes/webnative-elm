@@ -21,10 +21,6 @@ main =
         , subscriptions = subscriptions
         , view =
             \model ->
-                let
-                    _ =
-                        Debug.log "" model
-                in
                 if model.loading then
                     Html.text "Loading 👀"
 
