@@ -135,12 +135,12 @@ This will return a `Encapsulated` path. To get a path of the type `Path Director
     >>> "foo/bar/"
     ..>   |> fromPosix
     ..>   |> Webnative.Path.Encapsulated.toDirectory
-    Ok (directory [ "foo", "bar" ])
+    Just (directory [ "foo", "bar" ])
 
     >>> "foo/bar"
     ..>   |> fromPosix
     ..>   |> Webnative.Path.Encapsulated.toFile
-    Ok (file [ "foo", "bar" ])
+    Just (file [ "foo", "bar" ])
 
 -}
 fromPosix : String -> Path Encapsulated
@@ -237,7 +237,6 @@ unwrap (Path _ parts) =
     >>> import Json.Encode
 
     >>> [ "foo" ]
-    ..>   |>
     ..>   |> directory
     ..>   |> encode
     ..>   |> Json.Encode.encode 0
