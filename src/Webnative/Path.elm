@@ -2,9 +2,9 @@ module Webnative.Path exposing
     ( Path, Directory, File, Encapsulated, Kind(..)
     , directory, file, root
     , fromPosix, toPosix
-    , encapsulate, forPermissions
+    , encapsulate
     , kind, unwrap
-    , toTypescriptFormat
+    , encode
     )
 
 {-|
@@ -27,7 +27,7 @@ module Webnative.Path exposing
 
 # Encapsulation
 
-@docs encapsulate, forPermissions
+@docs encapsulate
 
 
 # Functions
@@ -37,7 +37,7 @@ module Webnative.Path exposing
 
 # Miscellaneous
 
-@docs toTypescriptFormat
+@docs encode
 
 -}
 
@@ -196,13 +196,6 @@ encapsulate (Path k p) =
     Path k p
 
 
-{-| Alias for [`encapsulate`](#encapsulate)
--}
-forPermissions : Path t -> Path Encapsulated
-forPermissions =
-    encapsulate
-
-
 
 -- 🛠
 
@@ -239,22 +232,26 @@ unwrap (Path _ parts) =
 -- MISCELLANEOUS
 
 
-{-| Convert to Typescript version of the SDK.
+{-| Encode to JSON.
 
     >>> import Json.Encode
 
-    >>> [ "foo" ] |> directory |> toTypescriptFormat |> Json.Encode.encode 0
+    >>> [ "foo" ]
+    ..>   |>
+    ..>   |> directory
+    ..>   |> encode
+    ..>   |> Json.Encode.encode 0
     "{\"directory\":[\"foo\"]}"
 
     >>> [ "bar" ]
     ..>   |> file
-    ..>   |> toTypescriptFormat
+    ..>   |> encode
     ..>   |> Json.Encode.encode 0
     "{\"file\":[\"bar\"]}"
 
 -}
-toTypescriptFormat : Path t -> Json.Value
-toTypescriptFormat (Path k p) =
+encode : Path t -> Json.Value
+encode (Path k p) =
     Json.object
         [ ( case k of
                 Directory ->

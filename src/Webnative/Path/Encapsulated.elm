@@ -18,29 +18,29 @@ import Webnative.Path as Path exposing (Directory, Encapsulated, File, Kind(..),
 
 {-| Remove the membrane and extract a `Path Directory`.
 -}
-toDirectory : Path Encapsulated -> Result String (Path Directory)
+toDirectory : Path Encapsulated -> Maybe (Path Directory)
 toDirectory path =
     case Path.kind path of
         Directory ->
             path
                 |> Path.unwrap
                 |> directory
-                |> Ok
+                |> Just
 
         File ->
-            Err "Encapsulated path is a File path, expected Directory"
+            Nothing
 
 
 {-| Remove the membrane and extract a `Path File`.
 -}
-toFile : Path Encapsulated -> Result String (Path File)
+toFile : Path Encapsulated -> Maybe (Path File)
 toFile path =
     case Path.kind path of
         Directory ->
-            Err "Encapsulated path is a Directory path, expected File"
+            Nothing
 
         File ->
             path
                 |> Path.unwrap
                 |> file
-                |> Ok
+                |> Just

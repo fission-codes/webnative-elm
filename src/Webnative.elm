@@ -1,7 +1,7 @@
 module Webnative exposing
     ( init, initWithOptions, InitOptions, defaultInitOptions, initialise, initialize
     , decodeResponse, DecodedResponse(..), Artifact(..), NoArtifact(..), Request, Response, Error(..), error
-    , redirectToLobby, RedirectTo(..), AppPermissions, FileSystemPermissions, Permissions
+    , redirectToLobby, RedirectTo(..), AppPermissions, FileSystemPermissions, BranchFileSystemPermissions, Permissions
     , isAuthenticated, State(..), AuthSucceededState, AuthCancelledState, ContinuationState
     , loadFileSystem
     )
@@ -30,7 +30,7 @@ Data flowing through the ports. See `🚀` in the `decodeResponse` example on ho
 
 # Authorisation
 
-@docs redirectToLobby, RedirectTo, AppPermissions, FileSystemPermissions, Permissions
+@docs redirectToLobby, RedirectTo, AppPermissions, FileSystemPermissions, BranchFileSystemPermissions, Permissions
 
 
 # Authentication
@@ -115,18 +115,31 @@ type alias AppPermissions =
     import Webnative.Path as Path
 
     { private =
-        [ Path.forPermissions (Path.directory [ "Audio", "Mixtapes" ])
-        , Path.forPermissions (Path.directory [ "Audio", "Playlists" ])
-        ]
+        { directories = [ Path.directory [ "Audio", "Mixtapes" ] ]
+        , files = [ Path.directory [ "Audio", "Playlists", "Jazz" ] ]
+        }
     , public =
-        []
+        { directories = []
+        , files = []
+        }
     }
     ```
 
 -}
 type alias FileSystemPermissions =
-    { private : List (Path Encapsulated)
-    , public : List (Path Encapsulated)
+    { private : BranchFileSystemPermissions
+    , public : BranchFileSystemPermissions
+    }
+
+
+{-| Filesystem permissions for a branch.
+
+This is reused for the private and public permissions.
+
+-}
+type alias BranchFileSystemPermissions =
+    { directories : List (Path Path.Directory)
+    , files : List (Path Path.File)
     }
 
 
@@ -467,9 +480,15 @@ encodeAppPermissions { creator, name } =
 
 encodeFileSystemPermissions : FileSystemPermissions -> Json.Value
 encodeFileSystemPermissions { private, public } =
+    let
+        encode branch =
+            List.append
+                (List.map Path.encode branch.directories)
+                (List.map Path.encode branch.files)
+    in
     Json.object
-        [ ( "private", Json.list Path.toTypescriptFormat private )
-        , ( "public", Json.list Path.toTypescriptFormat public )
+        [ ( "private", Json.list identity (encode private) )
+        , ( "public", Json.list identity (encode public) )
         ]
 
 

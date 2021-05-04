@@ -315,4 +315,4 @@ encodePath base path =
                     [ "public" ]
             )
         |> Path.directory
-        |> Path.toTypescriptFormat
+        |> Path.encode
