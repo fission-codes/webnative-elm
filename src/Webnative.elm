@@ -1,12 +1,12 @@
 module Webnative exposing
     ( init, initWithOptions, InitOptions, defaultInitOptions, initialise, initialize
     , decodeResponse, DecodedResponse(..), Artifact(..), NoArtifact(..), Request, Response, Error(..), error
-    , redirectToLobby, RedirectTo(..), AppPermissions, FileSystemPermissions, Permissions
+    , redirectToLobby, RedirectTo(..), AppPermissions, FileSystemPermissions, BranchFileSystemPermissions, Permissions
     , isAuthenticated, State(..), AuthSucceededState, AuthCancelledState, ContinuationState
     , loadFileSystem
     )
 
-{-| Interface for [webnative](https://github.com/fission-suite/webnative#readme).
+{-| Interface for [webnative](https://github.com/fission-suite/webnative#readme), version `0.24` and up.
 
 1.  [Getting Started](#getting-started)
 2.  [Ports](#ports)
@@ -30,7 +30,7 @@ Data flowing through the ports. See `🚀` in the `decodeResponse` example on ho
 
 # Authorisation
 
-@docs redirectToLobby, RedirectTo, AppPermissions, FileSystemPermissions, Permissions
+@docs redirectToLobby, RedirectTo, AppPermissions, FileSystemPermissions, BranchFileSystemPermissions, Permissions
 
 
 # Authentication
@@ -51,7 +51,8 @@ import Json.Encode as Json
 import Maybe.Extra as Maybe
 import Url exposing (Url)
 import Webnative.Internal as Webnative exposing (..)
-import Wnfs exposing (Artifact(..), Kind(..))
+import Webnative.Path as Path exposing (Encapsulated, Kind(..), Path)
+import Wnfs exposing (Artifact(..))
 import Wnfs.Internal as Wnfs exposing (..)
 
 
@@ -109,10 +110,36 @@ type alias AppPermissions =
 
 
 {-| Filesystem permissions.
+
+    ```elm
+    import Webnative.Path as Path
+
+    { private =
+        { directories = [ Path.directory [ "Audio", "Mixtapes" ] ]
+        , files = [ Path.directory [ "Audio", "Playlists", "Jazz" ] ]
+        }
+    , public =
+        { directories = []
+        , files = []
+        }
+    }
+    ```
+
 -}
 type alias FileSystemPermissions =
-    { privatePaths : List String
-    , publicPaths : List String
+    { private : BranchFileSystemPermissions
+    , public : BranchFileSystemPermissions
+    }
+
+
+{-| Filesystem permissions for a branch.
+
+This is reused for the private and public permissions.
+
+-}
+type alias BranchFileSystemPermissions =
+    { directories : List (Path Path.Directory)
+    , files : List (Path Path.File)
     }
 
 
@@ -139,6 +166,7 @@ defaultInitOptions =
 
 
 {-| Permissions to ask the user.
+See [`AppPermissions`](#AppPermissions) and [`FileSystemPermissions`](#FileSystemPermissions) on how to use these.
 -}
 type alias Permissions =
     { app : Maybe AppPermissions
@@ -451,10 +479,16 @@ encodeAppPermissions { creator, name } =
 
 
 encodeFileSystemPermissions : FileSystemPermissions -> Json.Value
-encodeFileSystemPermissions { privatePaths, publicPaths } =
+encodeFileSystemPermissions { private, public } =
+    let
+        encode branch =
+            List.append
+                (List.map Path.encode branch.directories)
+                (List.map Path.encode branch.files)
+    in
     Json.object
-        [ ( "privatePaths", Json.list Json.string privatePaths )
-        , ( "publicPaths", Json.list Json.string publicPaths )
+        [ ( "private", Json.list identity (encode private) )
+        , ( "public", Json.list identity (encode public) )
         ]
 
 

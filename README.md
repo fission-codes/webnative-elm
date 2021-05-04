@@ -14,9 +14,12 @@ A thin wrapper around [webnative](https://github.com/fission-suite/webnative#rea
 
 # QuickStart
 
-```
+```shell
 elm install fission-suite/webnative-elm
-npm install webnative-elm webnative
+
+# requires webnative version 0.24 or later
+npm install webnative
+npm install webnative-elm
 ```
 
 Setup the necessary ports on your Elm app.
@@ -37,13 +40,14 @@ Then import the javascript portion of this library to connect up the ports.
 import * as webnativeElm from "webnative-elm"
 
 // elmApp = Elm.Main.init()
-webnativeElm.setup(elmApp)
+webnativeElm.setup({ app: elmApp })
 ```
 
 Once we have that setup, we can write our webnative Elm code.
 
 ```elm
 import Webnative exposing (Artifact(..), DecodedResponse(..))
+import Webnative.Path as Path
 import Wnfs
 
 
@@ -134,7 +138,7 @@ update msg model =
     --
 
     ReadWnfsFile ->
-      { path = [ "hello.txt" ]
+      { path = Path.file [ "hello.txt" ]
       , tag = tagToString ReadHelloTxt
       }
         |> Wnfs.readUtf8 base
@@ -144,7 +148,7 @@ update msg model =
     WriteToWnfsFile ->
       "👋"
         |> Wnfs.writeUtf8 base
-          { path = [ "hello.txt" ]
+          { path = Path.file [ "hello.txt" ]
           , tag = tagToString Mutation
           }
         |> Ports.webnativeRequest
@@ -183,13 +187,14 @@ You can chain webnative commands in Elm by providing a tag, which is then attach
 
 ```elm
 import Webnative exposing (DecodedResponse(..))
+import Webnative.Path as Path
 import Wnfs
 
 type Tag = Mutation | PointerUpdated
 
 -- Request
 Wnfs.writeUtf8 base
-  { path = [ "hello.txt" ]
+  { path = Path.file [ "hello.txt" ]
   , tag = tagToString Mutation
   }
 
@@ -236,18 +241,22 @@ Webnative.loadFileSystem permissions
 
 ```js
 const fs = await webnative.loadFileSystem(permissions)
-webnativeElm.setup(elmApp, () => fs)
+webnativeElm.setup({ app: elmApp, getFs: () => fs })
 ```
 
 
 
 # Customisation
 
-You can customise the port names by passing in a third parameter.
+There's various customisation options:
 
 ```js
-webnativeElm.setup(elmApp, undefined, {
-  incoming: "webnativeRequest",
-  outgoing: "webnativeResponse"
+webnativeElm.setup({
+  app: elmApp,
+  portNames: {
+    incoming: "webnativeRequest",
+    outgoing: "webnativeResponse"
+  },
+  webnative: require("webnative")
 })
 ```
