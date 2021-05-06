@@ -302,17 +302,16 @@ wnfsWithBytes method base { path, tag } bytes =
 encodePath : Base -> Path k -> Json.Value
 encodePath base path =
     path
-        |> Path.unwrap
-        |> List.append
-            (case base of
-                AppData { creator, name } ->
-                    [ "private", "Apps", creator, name ]
+        |> Path.map
+            (\parts ->
+                case base of
+                    AppData { creator, name } ->
+                        [ "private", "Apps", creator, name ] ++ parts
 
-                Private ->
-                    [ "private" ]
+                    Private ->
+                        [ "private" ] ++ parts
 
-                Public ->
-                    [ "public" ]
+                    Public ->
+                        [ "public" ] ++ parts
             )
-        |> Path.directory
         |> Path.encode

@@ -3,7 +3,7 @@ module Webnative.Path exposing
     , directory, file, root
     , fromPosix, toPosix
     , encapsulate
-    , kind, unwrap
+    , kind, map, unwrap
     , encode
     )
 
@@ -32,7 +32,7 @@ module Webnative.Path exposing
 
 # Functions
 
-@docs kind, unwrap
+@docs kind, map, unwrap
 
 
 # Miscellaneous
@@ -212,6 +212,13 @@ encapsulate (Path k p) =
 kind : Path t -> Kind
 kind (Path k _) =
     k
+
+
+{-| Map.
+-}
+map : (List String -> List String) -> Path t -> Path t
+map fn (Path k parts) =
+    Path k (fn parts)
 
 
 {-| Get the path parts.
