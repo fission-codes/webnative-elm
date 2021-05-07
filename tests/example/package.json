@@ -1,7 +1,7 @@
 {
   "private": true,
   "dependencies": {
-    "webnative": "0.24.0-alpha-11",
+    "webnative": "0.24.0",
     "webnative-elm": "file:../../"
   },
   "devDependencies": {
