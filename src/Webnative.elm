@@ -116,7 +116,7 @@ type alias AppPermissions =
 
     { private =
         { directories = [ Path.directory [ "Audio", "Mixtapes" ] ]
-        , files = [ Path.directory [ "Audio", "Playlists", "Jazz" ] ]
+        , files = [ Path.file [ "Audio", "Playlists", "Jazz.json" ] ]
         }
     , public =
         { directories = []
