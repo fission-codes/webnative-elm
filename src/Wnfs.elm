@@ -3,7 +3,7 @@ module Wnfs exposing
     , mkdir, mv, rm, write, writeUtf8
     , exists, ls, read, readUtf8
     , add, cat
-    , Base(..), Attributes, Artifact(..), Entry
+    , Base(..), Attributes, Artifact(..), Entry, context
     , Error(..), error
     )
 
@@ -32,7 +32,7 @@ module Wnfs exposing
 
 # Requests & Responses
 
-@docs Base, Attributes, Artifact, Entry
+@docs Base, Attributes, Artifact, Entry, context
 
 
 # Errors
@@ -127,6 +127,13 @@ type alias Response =
     , method : String
     , data : Json.Value
     }
+
+
+{-| Request/Response context.
+-}
+context : String
+context =
+    "WNFS"
 
 
 
@@ -269,11 +276,6 @@ error err =
 
 
 -- ㊙️
-
-
-context : String
-context =
-    "WNFS"
 
 
 makeRequest : Method -> Base -> Path k -> String -> List Json.Value -> Request

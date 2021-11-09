@@ -1,8 +1,8 @@
 module Webnative exposing
     ( init, initWithOptions, InitOptions, defaultInitOptions, initialise, initialize
-    , decodeResponse, DecodedResponse(..), Artifact(..), NoArtifact(..), Request, Response, Error(..), error
+    , decodeResponse, DecodedResponse(..), Artifact(..), NoArtifact(..), Request, Response, Error(..), error, context
     , redirectToLobby, RedirectTo(..), AppPermissions, FileSystemPermissions, BranchFileSystemPermissions, Permissions
-    , isAuthenticated, State(..), AuthSucceededState, AuthCancelledState, ContinuationState
+    , isAuthenticated, leave, signOut, State(..), AuthSucceededState, AuthCancelledState, ContinuationState
     , loadFileSystem
     )
 
@@ -25,7 +25,7 @@ module Webnative exposing
 
 Data flowing through the ports. See `🚀` in the `decodeResponse` example on how to handle the result from `init`.
 
-@docs decodeResponse, DecodedResponse, Artifact, NoArtifact, Request, Response, Error, error
+@docs decodeResponse, DecodedResponse, Artifact, NoArtifact, Request, Response, Error, error, context
 
 
 # Authorisation
@@ -35,7 +35,7 @@ Data flowing through the ports. See `🚀` in the `decodeResponse` example on ho
 
 # Authentication
 
-@docs isAuthenticated, State, AuthSucceededState, AuthCancelledState, ContinuationState
+@docs isAuthenticated, leave, signOut, State, AuthSucceededState, AuthCancelledState, ContinuationState
 
 
 # Filesystem
@@ -195,6 +195,13 @@ type alias Response =
     }
 
 
+{-| Request/Response context.
+-}
+context : String
+context =
+    "WEBNATIVE"
+
+
 
 -- 🌳  ⌘  AUTH
 
@@ -300,6 +307,22 @@ initialize =
     init
 
 
+{-| Leave the app and go the lobby.
+Removes all traces of the user.
+Use `signOut` instead if you don't want the redirect.
+-}
+leave : Request
+leave =
+    { context = context
+    , tag = ""
+    , method = "leave"
+    , arguments =
+        [ ( "withoutRedirect", Json.bool False ) ]
+            |> Json.object
+            |> List.singleton
+    }
+
+
 {-| Load in the filesystem manually.
 -}
 loadFileSystem : Permissions -> Request
@@ -332,6 +355,23 @@ redirectToLobby redirectTo permissions =
             RedirectTo url ->
                 Json.string (Url.toString url)
         ]
+    }
+
+
+{-| Removes all traces of the user.
+Use `leave` instead if you want to
+go to the lobby immediately so the user
+can sign out there as well, if needed.
+-}
+signOut : Request
+signOut =
+    { context = context
+    , tag = ""
+    , method = "leave"
+    , arguments =
+        [ ( "withoutRedirect", Json.bool True ) ]
+            |> Json.object
+            |> List.singleton
     }
 
 
@@ -455,11 +495,6 @@ error err =
 
 
 -- ㊙️
-
-
-context : String
-context =
-    "WEBNATIVE"
 
 
 encodePermissions : Permissions -> Json.Value

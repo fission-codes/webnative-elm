@@ -1,5 +1,13 @@
 # Changelog
 
+### 6.1.0
+
+- Adds `Webnative.leave` and `Webnative.signOut` functions
+- Fixes issue with loading the filesystem manually.
+- Exposes `Webnative.context` and `Wnfs.context`,
+  so you can more easily build your own `Webnative.Request`s.
+
+
 ### 6.0.0
 
 __⚠️ Requires webnative 0.24 or later!__
