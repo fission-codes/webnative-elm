@@ -1,4 +1,4 @@
-![](https://raw.githubusercontent.com/fission-suite/kit/6a20e9af963dd000903b1c6e64f9fbb2102ba472/images/badge-solid-colored.svg)
+<img src="https://raw.githubusercontent.com/fission-suite/kit/ec26048c4cfd3b6ec82e104d87d2c9a8315285ad/images/badge-solid-colored.svg" width="88" />
 
 # Webnative Elm
 
