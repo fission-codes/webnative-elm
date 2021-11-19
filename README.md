@@ -215,6 +215,7 @@ For now you can do the following from Elm:
 
 - All WNFS interactions
 - Redirect to lobby
+- Leave / Sign out
 
 More coming later.  
 [Let us know](https://talk.fission.codes) if you have any requests.

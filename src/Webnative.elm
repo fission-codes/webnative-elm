@@ -73,6 +73,7 @@ Part of the `Artifact` type.
 type NoArtifact
     = LoadedFileSystemManually
     | RedirectingToLobby
+    | SignedOut
 
 
 {-| Request, or response, context.
@@ -553,6 +554,9 @@ decodeWebnativeResponse response =
                     (case method of
                         Initialise ->
                             Json.Decode.map Initialisation stateDecoder
+
+                        Leave ->
+                            Json.Decode.succeed (NoArtifact SignedOut)
 
                         LoadFileSystem ->
                             Json.Decode.succeed (NoArtifact LoadedFileSystemManually)

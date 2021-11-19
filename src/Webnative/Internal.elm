@@ -5,6 +5,7 @@ module Webnative.Internal exposing (..)
 
 type Method
     = Initialise
+    | Leave
     | LoadFileSystem
     | RedirectToLobby
 
@@ -14,6 +15,9 @@ methodFromString string =
     case string of
         "initialise" ->
             Just Initialise
+
+        "leave" ->
+            Just Leave
 
         "loadFileSystem" ->
             Just LoadFileSystem
@@ -30,6 +34,9 @@ methodToString method =
     case method of
         Initialise ->
             "initialise"
+
+        Leave ->
+            "leave"
 
         LoadFileSystem ->
             "loadFileSystem"

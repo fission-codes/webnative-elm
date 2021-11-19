@@ -1,5 +1,10 @@
 # Changelog
 
+### 7.0.0
+
+Fixes issue with decoding the response of `Webnative.leave` and `Webnative.signOut`.
+
+
 ### 6.1.0
 
 - Adds `Webnative.leave` and `Webnative.signOut` functions
