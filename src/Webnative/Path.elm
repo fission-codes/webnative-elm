@@ -208,6 +208,15 @@ encapsulate (Path k p) =
     >>> kind (file [])
     File
 
+    Even if a path is encapsulated,
+    you can still check the kind of path it is.
+
+    >>> kind (encapsulate <| directory [])
+    Directory
+
+    >>> kind (encapsulate <| file [])
+    File
+
 -}
 kind : Path t -> Kind
 kind (Path k _) =
