@@ -136,7 +136,12 @@ const DEFAULT_PORT_NAMES = {
           tag: request.tag,
           error: null,
           method: request.method,
-          data: data.root ? null : (data.buffer ? Array.from(data) : data),
+          data: (() => {
+            if (data.root) return null
+            if (data.multihash) return data.toString() // CID
+            if (data.buffer) return Array.from(data)
+            return data
+          })(),
           context: request.context
         })
 

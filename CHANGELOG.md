@@ -2,7 +2,8 @@
 
 ### 7.0.0
 
-Fixes issue with decoding the response of `Webnative.leave` and `Webnative.signOut`.
+- **Elm**: Fixes issue with decoding the response of `Webnative.leave` and `Webnative.signOut`.
+- **Js**: Support CID class instances from the multiformats library, which are converted to strings.
 
 
 ### 6.1.0
