@@ -6,7 +6,7 @@ module Webnative exposing
     , loadFileSystem
     )
 
-{-| Interface for [webnative](https://github.com/fission-suite/webnative#readme), version `0.24` and up.
+{-| Interface for [webnative](https://github.com/fission-codes/webnative#readme), version `0.24` and up.
 
 1.  [Getting Started](#getting-started)
 2.  [Ports](#ports)

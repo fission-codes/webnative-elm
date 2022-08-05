@@ -1,4 +1,6 @@
-<img src="https://raw.githubusercontent.com/fission-suite/kit/ec26048c4cfd3b6ec82e104d87d2c9a8315285ad/images/badge-solid-colored.svg" width="88" />
+<img src="https://raw.githubusercontent.com/fission-code/kit/ec26048c4cfd3b6ec82e104d87d2c9a8315285ad/images/badge-solid-colored.svg" width="88" />
+
+(There is also `fission-suite/webnative-elm`, but that package is outdated. Use this!)
 
 # Webnative Elm
 
@@ -6,7 +8,7 @@
 [![Discord](https://img.shields.io/discord/478735028319158273.svg)](https://discord.gg/zAQBDEq)
 [![Discourse](https://img.shields.io/discourse/https/talk.fission.codes/topics)](https://talk.fission.codes)
 
-A thin wrapper around [webnative](https://github.com/fission-suite/webnative#readme) for Elm.
+A thin wrapper around [webnative](https://github.com/fission-codes/webnative#readme) for Elm.
 
 > Fission helps developers build and scale their apps. We’re building a web native file system that combines files, encryption, and identity, like an open source iCloud.
 
@@ -15,7 +17,7 @@ A thin wrapper around [webnative](https://github.com/fission-suite/webnative#rea
 # QuickStart
 
 ```shell
-elm install fission-suite/webnative-elm
+elm install fission-codes/webnative-elm
 
 # requires webnative version 0.24 or later
 npm install webnative
@@ -210,7 +212,7 @@ case Webnative.decodeResponse tagFromString response of
 
 # API
 
-We don't support all the functions from [webnative](https://github.com/fission-suite/webnative#readme) yet.  
+We don't support all the functions from [webnative](https://github.com/fission-codes/webnative#readme) yet.  
 For now you can do the following from Elm:
 
 - All WNFS interactions
