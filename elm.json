@@ -3,7 +3,7 @@
     "name": "fission-suite/webnative-elm",
     "summary": "Thin wrapper around webnative for Elm",
     "license": "Apache-2.0",
-    "version": "7.0.0",
+    "version": "7.0.1",
     "exposed-modules": [
         "Webnative",
         "Webnative.Path",
