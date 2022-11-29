@@ -11,13 +11,12 @@ import Webnative.Task as Webnative
 
 
 program : Configuration -> Webnative.Task Program
-program config =
+program =
     callTaskPort
         { function = "program"
         , valueDecoder = Program.decoder
         , argsEncoder = Configuration.encode
         }
-        config
 
 
 
@@ -27,4 +26,4 @@ program config =
 {-| Alias for `Webnative.Task.attempt`.
 -}
 attemptTask =
-    Webnative.Task.attempt
+    Webnative.attempt

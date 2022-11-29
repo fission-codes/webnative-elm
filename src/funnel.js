@@ -38,6 +38,15 @@
 
     ns.register("program", createProgram)
 
+    ns.register("auth.isUsernameAvailable", withProgram(p => p.auth.isUsernameAvailable))
+    ns.register("auth.isUsernameValid", withProgram(p => p.auth.isUsernameValid))
+    ns.register("auth.register", withProgram(p => p.auth.register))
+    ns.register("auth.session", withProgram(p => p.auth.session))
+
+    ns.register("capabilities.collect", withProgram(p => p.capabilities.collect))
+    ns.register("capabilities.request", withProgram(p => p.capabilities.request))
+    ns.register("capabilities.session", withProgram(p => p.capabilities.session))
+
     return { taskPortNamespace: ns }
   }
 
@@ -49,13 +58,13 @@
   function createProgram(config) {
     return wn.program(config).then(
       program => {
-        const programId = wn.namespace(config)
-        programs[ programId ] = program
+        const programRef = wn.namespace(config)
+        programs[ programRef ] = program
 
-        const fsId = program.session && program.session.fs ? fileSystemId(program.session.fs) : null
-        if (fsId) fileSystems[ fsId ] = program.session.fs
+        const fsRef = program.session && program.session.fs ? fileSystemRef(program.session.fs) : null
+        if (fsRef) fileSystems[ fsRef ] = program.session.fs
 
-        return { ok: encodeProgram(program) }
+        return { ok: encodeProgram(program, programRef) }
       },
       error => {
         return { err: error }
@@ -68,18 +77,22 @@
   // 🛠
 
 
-  function encodeProgram(program) {
-    return { session: encodeSession(program.session) }
+  function encodeProgram(program, programRef) {
+    return { ref: programRef, session: program.session }
   }
 
 
-  function encodeSession({ username, type }) {
-    return { kind: type, username }
-  }
-
-
-  function fileSystemId(fs) {
+  function fileSystemRef(fs) {
     return fs.account.rootDID
+  }
+
+
+  function withProgram(fn) {
+    return ({ arg, programRef, useSplat }) => {
+      const program = programs[ programRef ]
+      const innerFn = fn(program)
+      return useSplat ? innerFn(...arg) : innerFn(arg)
+    }
   }
 
 }))
