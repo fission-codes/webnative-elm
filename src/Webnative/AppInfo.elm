@@ -1,4 +1,4 @@
-module Webnative.AppInfo exposing (..)
+module Webnative.AppInfo exposing (AppInfo, appId, encode)
 
 import Json.Encode as Json
 

@@ -1,4 +1,4 @@
-module Webnative.Task exposing (..)
+module Webnative.Task exposing (Task, attempt)
 
 import Task
 import Webnative.Error as Webnative

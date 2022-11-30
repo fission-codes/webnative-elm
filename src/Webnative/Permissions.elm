@@ -1,4 +1,4 @@
-module Webnative.Permissions exposing (..)
+module Webnative.Permissions exposing (BranchFileSystemPermissions, FileSystemPermissions, Permissions, encode, encodeFileSystemPermissions, flattenPermissions)
 
 import Json.Encode as Json
 import Maybe.Extra as Maybe

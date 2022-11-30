@@ -1,4 +1,4 @@
-module Webnative.Program exposing (Program, decoder, encode, withRef)
+module Webnative.Program exposing (Program, decoder, encode, ref, withRef, withRefSplat)
 
 import Json.Decode exposing (Decoder)
 import Json.Encode as Json
@@ -13,17 +13,13 @@ type Program
 
 
 
--- 🛠
+-- REFERENCE
 
 
-decoder : Decoder Program
-decoder =
-    Json.Decode.map ProgramReference Json.Decode.string
-
-
-encode : Program -> Json.Value
-encode (ProgramReference ref) =
-    Json.string ref
+ref : Program -> Json.Value
+ref program =
+    Json.object
+        [ ( "programRef", encode program ) ]
 
 
 withRef : Program -> Json.Value -> Json.Value
@@ -41,3 +37,17 @@ withRefSplat program arg =
         , ( "arg", arg )
         , ( "useSplat", Json.bool True )
         ]
+
+
+
+-- 🛠
+
+
+decoder : Decoder Program
+decoder =
+    Json.Decode.map ProgramReference Json.Decode.string
+
+
+encode : Program -> Json.Value
+encode (ProgramReference r) =
+    Json.string r
