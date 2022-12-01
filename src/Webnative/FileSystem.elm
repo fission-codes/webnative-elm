@@ -1,13 +1,14 @@
-module Webnative.FileSystem exposing (AssociatedIdentity, Base(..), Entry, FileSystem, acceptShare, account, add, cat, deactivate, decoder, directoryEntriesDecoder, encode, exists, historyStep, ls, mkdir, mv, publish, read, ref, rm, sharePrivate, symlink, withRef, withRefSplat, write)
+module Webnative.FileSystem exposing (AssociatedIdentity, Base(..), Entry, FileSystem, acceptShare, account, add, cat, deactivate, decoder, directoryEntriesDecoder, encode, exists, historyStep, ls, mkdir, mv, publish, read, readUtf8, ref, rm, sharePrivate, symlink, withRef, withRefSplat, write, writeUtf8)
 
 import Bytes exposing (Bytes)
+import Bytes.Encode
 import Dict
 import Json.Decode exposing (Decoder)
 import Json.Encode as Json
 import TaskPort
 import Webnative.AppInfo exposing (AppInfo)
 import Webnative.CID as CID exposing (CID)
-import Webnative.Internal exposing (callTaskPort, encodeBytes, fileContentDecoder)
+import Webnative.Internal exposing (callTaskPort, encodeBytes, fileContentDecoder, utf8ContentDecoder)
 import Webnative.Path as Path exposing (Directory, File, Kind(..), Path)
 import Webnative.Task exposing (Task)
 
@@ -169,6 +170,15 @@ read fs base =
         }
 
 
+readUtf8 : FileSystem -> Base -> Path File -> Task String
+readUtf8 fs base =
+    callTaskPort
+        { function = "fileSystem.read"
+        , valueDecoder = utf8ContentDecoder
+        , argsEncoder = encodePath base >> withRef fs
+        }
+
+
 rm : FileSystem -> Base -> Path k -> Task ()
 rm fs base =
     callTaskPort
@@ -212,6 +222,18 @@ write fs base path content =
         }
         [ encodePath base path
         , encodeBytes content
+        ]
+
+
+writeUtf8 : FileSystem -> Base -> Path File -> String -> Task ()
+writeUtf8 fs base path content =
+    callTaskPort
+        { function = "fileSystem.write"
+        , valueDecoder = TaskPort.ignoreValue
+        , argsEncoder = Json.list identity >> withRefSplat fs
+        }
+        [ encodePath base path
+        , encodeBytes (Bytes.Encode.encode <| Bytes.Encode.string content)
         ]
 
 
