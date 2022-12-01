@@ -50,10 +50,9 @@ register program =
 
 
 session : Program -> Task (Maybe Session)
-session program =
+session =
     callTaskPort
         { function = "auth.session"
         , valueDecoder = Json.Decode.maybe Session.decoder
-        , argsEncoder = identity
+        , argsEncoder = Program.ref
         }
-        (Program.ref program)

@@ -13,7 +13,7 @@ import Webnative.Task exposing (Task)
 
 
 collect : Program -> Task { username : Maybe String }
-collect program =
+collect =
     callTaskPort
         { function = "capabilities.collect"
         , valueDecoder =
@@ -21,26 +21,23 @@ collect program =
                 (\u -> { username = u })
                 (Json.Decode.maybe Json.Decode.string)
         , argsEncoder =
-            identity
+            Program.ref
         }
-        (Program.ref program)
 
 
 request : Program -> Task ()
-request program =
+request =
     callTaskPort
         { function = "capabilities.request"
         , valueDecoder = TaskPort.ignoreValue
-        , argsEncoder = identity
+        , argsEncoder = Program.ref
         }
-        (Program.ref program)
 
 
 session : Program -> Task (Maybe Session)
-session program =
+session =
     callTaskPort
         { function = "capabilities.session"
         , valueDecoder = Json.Decode.maybe Session.decoder
-        , argsEncoder = identity
+        , argsEncoder = Program.ref
         }
-        (Program.ref program)
