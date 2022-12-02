@@ -27,7 +27,7 @@
   exports.init = function ({
     taskPort,
     webnative
-  }) {
+  } = {}) {
     if (taskPort) tp = taskPort
     if (webnative) wn = webnative
 

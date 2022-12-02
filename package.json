@@ -6,10 +6,13 @@
   "main": "src/funnel.js",
   "browser": "src/funnel.js",
   "peerDependencies": {
+    "elm-taskport": "> 0.2.0",
     "webnative": "> 0.35.0"
   },
   "devDependencies": {
-    "webnative": "^0.35.0"
+    "elm-taskport": "^2.0.1",
+    "events": "^3.3.0",
+    "webnative": "^0.35.0-alpha-3"
   },
   "files": [
     "LICENSE",
