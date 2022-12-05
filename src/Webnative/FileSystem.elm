@@ -1,4 +1,4 @@
-module Webnative.FileSystem exposing (AssociatedIdentity, Base(..), Entry, FileSystem, acceptShare, account, add, cat, deactivate, decoder, directoryEntriesDecoder, encode, exists, historyStep, ls, mkdir, mv, publish, read, readUtf8, ref, rm, sharePrivate, symlink, withRef, withRefSplat, write, writeUtf8)
+module Webnative.FileSystem exposing (AssociatedIdentity, Base(..), Entry, FileSystem, acceptShare, account, add, cat, deactivate, decoder, directoryEntriesDecoder, encode, exists, historyStep, load, loadRoot, ls, mkdir, mv, publish, read, readUtf8, ref, rm, sharePrivate, symlink, withRef, withRefSplat, write, writeUtf8)
 
 import Bytes exposing (Bytes)
 import Bytes.Encode
@@ -10,6 +10,7 @@ import Webnative.AppInfo exposing (AppInfo)
 import Webnative.CID as CID exposing (CID)
 import Webnative.Internal exposing (callTaskPort, encodeBytes, fileContentDecoder, utf8ContentDecoder)
 import Webnative.Path as Path exposing (Directory, File, Kind(..), Path)
+import Webnative.Program as Program
 import Webnative.Task exposing (Task)
 
 
@@ -46,7 +47,20 @@ type alias Entry =
 
 
 
--- POSIX (FILES)
+-- LOADING
+
+
+load : Program.Program -> { username : String } -> Task FileSystem
+load program =
+    callTaskPort
+        { function = "loadFileSystem"
+        , valueDecoder = decoder
+        , argsEncoder = (\{ username } -> Json.string username) >> Program.withRef program
+        }
+
+
+
+-- POSIX
 
 
 acceptShare : FileSystem -> { shareId : String, sharedBy : String } -> Task ()

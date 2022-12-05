@@ -1,8 +1,10 @@
-module Webnative.Auth exposing (isUsernameAvailable, isUsernameValid, register, session)
+module Webnative.Auth exposing (isUsernameAvailable, isUsernameValid, register, session, sessionWithFileSystem)
 
 import Json.Decode
 import Json.Encode as Json
 import Maybe.Extra as Maybe
+import Task
+import Webnative.FileSystem as FileSystem exposing (FileSystem)
 import Webnative.Internal exposing (callTaskPort)
 import Webnative.Program as Program exposing (Program)
 import Webnative.Session as Session exposing (Session)
@@ -56,3 +58,19 @@ session =
         , valueDecoder = Json.Decode.maybe Session.decoder
         , argsEncoder = Program.ref
         }
+
+
+sessionWithFileSystem : Program -> Task (Maybe { fileSystem : FileSystem, session : Session })
+sessionWithFileSystem program =
+    Task.andThen
+        (\maybe ->
+            case maybe of
+                Just ses ->
+                    { username = ses.username }
+                        |> FileSystem.load
+                        |> Task.map (\fs -> Just { fileSystem = fs, session = ses })
+
+                Nothing ->
+                    Task.succeed Nothing
+        )
+        (session program)

@@ -14,39 +14,25 @@ import Webnative.Task as Webnative
 -- 🚀
 
 
-program : Configuration -> Webnative.Task { program : Program, session : Maybe Session }
+type alias Foundation =
+    { fileSystem : Maybe FileSystem
+    , program : Program
+    , session : Maybe Session
+    }
+
+
+program : Configuration -> Webnative.Task Foundation
 program =
     callTaskPort
         { function = "program"
         , valueDecoder =
-            Json.Decode.map2
-                (\p s -> { program = p, session = s })
-                Program.decoder
-                (Json.Decode.maybe Session.decoder)
+            Json.Decode.map3
+                (\f p s -> { fileSystem = f, program = p, session = s })
+                (Json.Decode.field "fs" <| Json.Decode.maybe FileSystem.decoder)
+                (Json.Decode.field "program" Program.decoder)
+                (Json.Decode.field "session" <| Json.Decode.maybe Session.decoder)
         , argsEncoder =
             Configuration.encode
-        }
-
-
-
--- 💾
-
-
-loadFileSystem : { username : String } -> Webnative.Task FileSystem
-loadFileSystem =
-    callTaskPort
-        { function = "loadFileSystem"
-        , valueDecoder = FileSystem.decoder
-        , argsEncoder = \{ username } -> Json.string username
-        }
-
-
-loadRootFileSystem : { username : String } -> Webnative.Task FileSystem
-loadRootFileSystem =
-    callTaskPort
-        { function = "loadRootFileSystem"
-        , valueDecoder = FileSystem.decoder
-        , argsEncoder = \{ username } -> Json.string username
         }
 
 

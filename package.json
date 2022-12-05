@@ -3,20 +3,55 @@
   "description": "Thin wrapper around webnative for Elm",
   "version": "8.0.0",
   "author": "Steven Vandevelde <icid.asset@gmail.com>",
-  "main": "src/funnel.js",
-  "browser": "src/funnel.js",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./lib/*": [
+      "./lib/*",
+      "./lib/*.js",
+      "./lib/*/index.js"
+    ],
+    "./*": [
+      "./lib/*",
+      "./lib/*.js",
+      "./lib/*/index.js",
+      "./*"
+    ],
+    "./package.json": "./package.json"
+  },
+  "types": "lib/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "lib/index.d.ts": [
+        "lib/index.d.ts"
+      ],
+      "*": [
+        "lib/*"
+      ]
+    }
+  },
+  "scripts": {
+    "build:js": "rimraf lib dist && tsc && esbuild --bundle --format=esm --sourcemap --outfile=dist/index.esm.min.js src/funnel.ts"
+  },
   "peerDependencies": {
     "elm-taskport": "> 0.2.0",
     "webnative": "> 0.35.0"
   },
   "devDependencies": {
     "elm-taskport": "^2.0.1",
+    "esbuild": "^0.15.18",
     "events": "^3.3.0",
-    "webnative": "^0.35.0-alpha-3"
+    "rimraf": "^3.0.2",
+    "typescript": "^4.9.3",
+    "webnative": "file:../webnative"
   },
   "files": [
+    "dist",
+    "lib",
+    "CHANGELOG.md",
     "LICENSE",
     "README.md",
-    "src/**/*.js"
+    "package.json"
   ]
 }
