@@ -135,7 +135,7 @@ update msg model =
                 }
 
             -- Option (B), link an existing account.
-            -- TODO:
+            -- See 'Linking' section below.
           
           _ ->
             Cmd.none
@@ -191,6 +191,16 @@ update msg model =
     HandleWebnativeError UnsupportedBrowser ->        -- No indexedDB? Depends on how Webnative is configured.
     HandleWebnativeError InsecureContext ->           -- Webnative requires a secure context
     HandleWebnativeError (JavascriptError string) ->  -- Notification.push ("Got JS error: " ++ string)
+```
+
+
+
+# Linking
+
+When a user has already registered an account, they can link a device instead.
+
+```elm
+-- TODO: Yet to be implemented
 ```
 
 
