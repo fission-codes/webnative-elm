@@ -67,7 +67,7 @@ sessionWithFileSystem program =
             case maybe of
                 Just ses ->
                     { username = ses.username }
-                        |> FileSystem.load
+                        |> FileSystem.load program
                         |> Task.map (\fs -> Just { fileSystem = fs, session = ses })
 
                 Nothing ->
