@@ -36,8 +36,8 @@
     "prepare": "npm run build:js"
   },
   "peerDependencies": {
-    "elm-taskport": "> 0.2.0",
-    "webnative": "> 0.35.0"
+    "elm-taskport": ">=0.2.0",
+    "webnative": ">=0.35.0"
   },
   "devDependencies": {
     "elm-taskport": "^2.0.1",
