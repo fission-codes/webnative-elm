@@ -18,7 +18,7 @@ import Webnative.Task exposing (Task)
 isUsernameAvailable : Program -> String -> Task Bool
 isUsernameAvailable program =
     callTaskPort
-        { function = "auth.isUsernameAvailable"
+        { function = "auth_isUsernameAvailable"
         , valueDecoder = Json.Decode.bool
         , argsEncoder = Json.string >> Program.withRef program
         }
@@ -27,7 +27,7 @@ isUsernameAvailable program =
 isUsernameValid : Program -> String -> Task Bool
 isUsernameValid program =
     callTaskPort
-        { function = "auth.isUsernameValid"
+        { function = "auth_isUsernameValid"
         , valueDecoder = Json.Decode.bool
         , argsEncoder = Json.string >> Program.withRef program
         }
@@ -36,7 +36,7 @@ isUsernameValid program =
 register : Program -> { email : Maybe String, username : String } -> Task { success : Bool }
 register program =
     callTaskPort
-        { function = "auth.register"
+        { function = "auth_register"
         , valueDecoder =
             Json.Decode.map
                 (\s -> { success = s })
@@ -54,7 +54,7 @@ register program =
 session : Program -> Task (Maybe Session)
 session =
     callTaskPort
-        { function = "auth.session"
+        { function = "auth_session"
         , valueDecoder = Json.Decode.maybe Session.decoder
         , argsEncoder = Program.ref
         }

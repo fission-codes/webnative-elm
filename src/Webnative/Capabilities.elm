@@ -15,7 +15,7 @@ import Webnative.Task exposing (Task)
 collect : Program -> Task { username : Maybe String }
 collect =
     callTaskPort
-        { function = "capabilities.collect"
+        { function = "capabilities_collect"
         , valueDecoder =
             Json.Decode.map
                 (\u -> { username = u })
@@ -28,7 +28,7 @@ collect =
 request : Program -> Task ()
 request =
     callTaskPort
-        { function = "capabilities.request"
+        { function = "capabilities_request"
         , valueDecoder = TaskPort.ignoreValue
         , argsEncoder = Program.ref
         }
@@ -37,7 +37,7 @@ request =
 session : Program -> Task (Maybe Session)
 session =
     callTaskPort
-        { function = "capabilities.session"
+        { function = "capabilities_session"
         , valueDecoder = Json.Decode.maybe Session.decoder
         , argsEncoder = Program.ref
         }

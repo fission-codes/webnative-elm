@@ -66,7 +66,7 @@ load program =
 acceptShare : FileSystem -> { shareId : String, sharedBy : String } -> Task ()
 acceptShare fs { shareId, sharedBy } =
     callTaskPort
-        { function = "fileSystem.acceptShare"
+        { function = "fileSystem_acceptShare"
         , valueDecoder = TaskPort.ignoreValue
         , argsEncoder = Json.object >> withRef fs
         }
@@ -78,7 +78,7 @@ acceptShare fs { shareId, sharedBy } =
 account : FileSystem -> Task AssociatedIdentity
 account =
     callTaskPort
-        { function = "fileSystem.account"
+        { function = "fileSystem_account"
         , valueDecoder =
             Json.Decode.map2
                 (\r u -> { rootDID = r, username = u })
@@ -91,7 +91,7 @@ account =
 add : FileSystem -> Base -> Path File -> Bytes -> Task ()
 add fs base path content =
     callTaskPort
-        { function = "fileSystem.add"
+        { function = "fileSystem_add"
         , valueDecoder = TaskPort.ignoreValue
         , argsEncoder = Json.list identity >> withRefSplat fs
         }
@@ -103,7 +103,7 @@ add fs base path content =
 cat : FileSystem -> Base -> Path File -> Task Bytes
 cat fs base =
     callTaskPort
-        { function = "fileSystem.cat"
+        { function = "fileSystem_cat"
         , valueDecoder = fileContentDecoder
         , argsEncoder = encodePath base >> withRef fs
         }
@@ -112,7 +112,7 @@ cat fs base =
 deactivate : FileSystem -> Task ()
 deactivate =
     callTaskPort
-        { function = "fileSystem.deactivate"
+        { function = "fileSystem_deactivate"
         , valueDecoder = TaskPort.ignoreValue
         , argsEncoder = ref
         }
@@ -121,7 +121,7 @@ deactivate =
 exists : FileSystem -> Base -> Path File -> Task Bool
 exists fs base =
     callTaskPort
-        { function = "fileSystem.exists"
+        { function = "fileSystem_exists"
         , valueDecoder = Json.Decode.bool
         , argsEncoder = encodePath base >> withRef fs
         }
@@ -130,7 +130,7 @@ exists fs base =
 historyStep : FileSystem -> Task ()
 historyStep =
     callTaskPort
-        { function = "fileSystem.historyStep"
+        { function = "fileSystem_historyStep"
         , valueDecoder = TaskPort.ignoreValue
         , argsEncoder = ref
         }
@@ -139,7 +139,7 @@ historyStep =
 ls : FileSystem -> Base -> Path Directory -> Task (List Entry)
 ls fs base =
     callTaskPort
-        { function = "fileSystem.ls"
+        { function = "fileSystem_ls"
         , valueDecoder = directoryEntriesDecoder
         , argsEncoder = encodePath base >> withRef fs
         }
@@ -148,7 +148,7 @@ ls fs base =
 mkdir : FileSystem -> Base -> Path Directory -> Task ()
 mkdir fs base =
     callTaskPort
-        { function = "fileSystem.mkdir"
+        { function = "fileSystem_mkdir"
         , valueDecoder = TaskPort.ignoreValue
         , argsEncoder = encodePath base >> withRef fs
         }
@@ -157,7 +157,7 @@ mkdir fs base =
 mv : FileSystem -> Base -> { from : Path k, to : Path k } -> Task ()
 mv fs base { from, to } =
     callTaskPort
-        { function = "fileSystem.mv"
+        { function = "fileSystem_mv"
         , valueDecoder = TaskPort.ignoreValue
         , argsEncoder = Json.list identity >> withRefSplat fs
         }
@@ -169,7 +169,7 @@ mv fs base { from, to } =
 publish : FileSystem -> Task CID
 publish =
     callTaskPort
-        { function = "fileSystem.publish"
+        { function = "fileSystem_publish"
         , valueDecoder = CID.decoder
         , argsEncoder = ref
         }
@@ -178,7 +178,7 @@ publish =
 read : FileSystem -> Base -> Path File -> Task Bytes
 read fs base =
     callTaskPort
-        { function = "fileSystem.read"
+        { function = "fileSystem_read"
         , valueDecoder = fileContentDecoder
         , argsEncoder = encodePath base >> withRef fs
         }
@@ -187,7 +187,7 @@ read fs base =
 readUtf8 : FileSystem -> Base -> Path File -> Task String
 readUtf8 fs base =
     callTaskPort
-        { function = "fileSystem.read"
+        { function = "fileSystem_read"
         , valueDecoder = utf8ContentDecoder
         , argsEncoder = encodePath base >> withRef fs
         }
@@ -196,7 +196,7 @@ readUtf8 fs base =
 rm : FileSystem -> Base -> Path k -> Task ()
 rm fs base =
     callTaskPort
-        { function = "fileSystem.rm"
+        { function = "fileSystem_rm"
         , valueDecoder = TaskPort.ignoreValue
         , argsEncoder = encodePath base >> withRef fs
         }
@@ -205,7 +205,7 @@ rm fs base =
 sharePrivate : FileSystem -> List (Path k) -> { shareWith : List String } -> Task ()
 sharePrivate fs paths { shareWith } =
     callTaskPort
-        { function = "fileSystem.sharePrivate"
+        { function = "fileSystem_sharePrivate"
         , valueDecoder = TaskPort.ignoreValue
         , argsEncoder = Json.object >> withRef fs
         }
@@ -217,7 +217,7 @@ sharePrivate fs paths { shareWith } =
 symlink : FileSystem -> Base -> { at : Path Directory, name : String, referringTo : Path k } -> Task ()
 symlink fs base { at, name, referringTo } =
     callTaskPort
-        { function = "fileSystem.symlink"
+        { function = "fileSystem_symlink"
         , valueDecoder = TaskPort.ignoreValue
         , argsEncoder = Json.object >> withRef fs
         }
@@ -230,7 +230,7 @@ symlink fs base { at, name, referringTo } =
 write : FileSystem -> Base -> Path File -> Bytes -> Task ()
 write fs base path content =
     callTaskPort
-        { function = "fileSystem.write"
+        { function = "fileSystem_write"
         , valueDecoder = TaskPort.ignoreValue
         , argsEncoder = Json.list identity >> withRefSplat fs
         }
@@ -242,7 +242,7 @@ write fs base path content =
 writeUtf8 : FileSystem -> Base -> Path File -> String -> Task ()
 writeUtf8 fs base path content =
     callTaskPort
-        { function = "fileSystem.write"
+        { function = "fileSystem_write"
         , valueDecoder = TaskPort.ignoreValue
         , argsEncoder = Json.list identity >> withRefSplat fs
         }
