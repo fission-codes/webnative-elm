@@ -1,6 +1,4 @@
-import * as TaskPort from "elm-taskport/js/taskport.js"
 import * as Webnative from "webnative"
-import { Namespace } from "elm-taskport/js/namespace.js"
 import { Maybe } from "webnative"
 
 
@@ -10,7 +8,7 @@ export type Reference = string
 /**
  * Create TaskPort namespace.
  */
-export function createTaskPortNamespace(): typeof Namespace {
+export function createTaskPortNamespace(TaskPort) {
   return TaskPort.createNamespace("fission-codes/webnative", "8.0.0")
 }
 
@@ -22,8 +20,9 @@ export function createTaskPortNamespace(): typeof Namespace {
  */
 export function init(options: {
   fileSystems?: Webnative.FileSystem[]
-  programs?: Webnative.Program[]
-}): { taskPortNamespace: typeof Namespace } {
+  programs?: Webnative.Program[],
+  TaskPort: any
+}): { taskPortNamespace } {
   const fileSystems: Record<string, Webnative.FileSystem> = Object.fromEntries(
     (options.fileSystems || []).map(fs => [ fileSystemRef(fs), fs ])
   )
@@ -32,7 +31,7 @@ export function init(options: {
     (options.programs || []).map(program => [ programRef(program), program ])
   )
 
-  const ns = createTaskPortNamespace()
+  const ns = createTaskPortNamespace(options.TaskPort)
 
   const withProg = fn => withProgram(programs, fn)
   const withFs = fn => withFileSystem(fileSystems, fn)

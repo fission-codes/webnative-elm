@@ -35,7 +35,7 @@ import * as TaskPort from "elm-taskport"
 import * as WebnativeElm from "webnative-elm"
 
 TaskPort.install()
-WebnativeElm.init()
+WebnativeElm.init({ TaskPort })
 
 // elmApp = Elm.Main.init()
 ```
