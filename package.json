@@ -45,7 +45,7 @@
     "events": "^3.3.0",
     "rimraf": "^3.0.2",
     "typescript": "^4.9.3",
-    "webnative": "fission-codes/webnative#icidasset/release-prep"
+    "webnative": "file:../webnative"
   },
   "files": [
     "dist",

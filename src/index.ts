@@ -1,5 +1,7 @@
 import * as Webnative from "webnative"
 import { Maybe } from "webnative"
+import { hasProp } from "webnative/common/index"
+import { DistinctivePath } from "webnative/path/index"
 
 
 export type Reference = string
@@ -50,7 +52,7 @@ export function init(options: {
 
   ns.register("fileSystem_acceptShare", withFs(f => f.acceptShare))
   ns.register("fileSystem_account", withFs(f => f.account))
-  ns.register("fileSystem_add", withFs(f => f.add))
+  ns.register("fileSystem_add", withFs(addToFileSystem))
   ns.register("fileSystem_cat", withFs(f => f.cat))
   ns.register("fileSystem_deactivate", withFs(f => f.deactivate))
   ns.register("fileSystem_exists", withFs(f => f.exists))
@@ -66,7 +68,7 @@ export function init(options: {
   ns.register("fileSystem_rm", withFs(f => f.rm))
   ns.register("fileSystem_sharePrivate", withFs(f => f.sharePrivate))
   ns.register("fileSystem_symlink", withFs(f => f.symlink))
-  ns.register("fileSystem_write", withFs(f => f.write))
+  ns.register("fileSystem_write", withFs(addToFileSystem))
 
   return { taskPortNamespace: ns }
 }
@@ -74,6 +76,13 @@ export function init(options: {
 
 
 // TASKS
+
+
+function addToFileSystem(fs: Webnative.FileSystem) {
+  return (path: DistinctivePath, bytes: number[]) => fs.add(
+    path, Uint8Array.from(bytes)
+  )
+}
 
 
 function createProgram(
@@ -138,13 +147,18 @@ export function programRef(program: Webnative.Program): Reference {
 
 function withFileSystem(
   fileSystems: Record<string, Webnative.FileSystem>,
-  fn: (program: Webnative.FileSystem) => unknown
+  fn: (fs: Webnative.FileSystem) => unknown
 ) {
-  return ({ arg, fsRef, useSplat }) => {
-    const fs = fileSystems[ fsRef ]
+  return async ({ arg, fileSystemRef, useSplat }) => {
+    const fs = fileSystems[ fileSystemRef ]
     const innerValue = fn(fs)
     if (typeof innerValue !== "function") return innerValue
-    return useSplat ? innerValue(...arg) : innerValue(arg)
+    const result = useSplat ? await innerValue.apply(fs, arg) : await innerValue.call(fs, arg)
+
+    if (hasProp(result, "account")) return null // FileSystem instance
+    if (hasProp(result, "code")) return result.toString()
+    if (hasProp(result, "buffer")) return Array.from(result as Uint8Array)
+    return result
   }
 }
 
@@ -157,6 +171,6 @@ function withProgram(
     const program = programs[ programRef ]
     const innerValue = fn(program)
     if (typeof innerValue !== "function") return innerValue
-    return useSplat ? innerValue(...arg) : innerValue(arg)
+    return useSplat ? innerValue.apply(program, arg) : innerValue.call(program, arg)
   }
 }
