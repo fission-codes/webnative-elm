@@ -44,10 +44,10 @@ fromTaskPort error =
         TaskPort.InteropError interopError ->
             fromString (TaskPort.interopErrorToString interopError)
 
-        TaskPort.JSError (TaskPort.ErrorObject string _) ->
-            fromString string
-
         TaskPort.JSError (TaskPort.ErrorValue value) ->
             value
                 |> Json.Decode.decodeValue decoder
                 |> Result.withDefault (fromString <| TaskPort.errorToString error)
+
+        TaskPort.JSError _ ->
+            fromString (TaskPort.errorToString error)
