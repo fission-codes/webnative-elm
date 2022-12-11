@@ -45,7 +45,7 @@
     "events": "^3.3.0",
     "rimraf": "^3.0.2",
     "typescript": "^4.9.3",
-    "webnative": "file:../webnative"
+    "webnative": "fission-codes/webnative#1a73418fb7e4a5434410cb0c54e2bf54d33c7353"
   },
   "files": [
     "dist",
