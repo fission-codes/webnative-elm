@@ -32,7 +32,7 @@
     }
   },
   "scripts": {
-    "build:js": "rimraf lib dist && tsc && esbuild --bundle --format=esm --sourcemap --outfile=dist/index.esm.min.js src/index.ts",
+    "build:js": "rimraf lib dist && tsc && node ./scripts/build-minified.js",
     "prepare": "npm run build:js"
   },
   "peerDependencies": {
