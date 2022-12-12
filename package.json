@@ -33,7 +33,10 @@
   },
   "scripts": {
     "build:js": "rimraf lib dist && tsc && node ./scripts/build-minified.js",
-    "prepare": "npm run build:js"
+    "prepare": "npm run build:js",
+    "publish-dry": "npm publish --dry-run",
+    "publish-alpha": "npm publish --tag alpha",
+    "publish-latest": "npm publish --tag latest"
   },
   "peerDependencies": {
     "elm-taskport": ">=0.2.0",
