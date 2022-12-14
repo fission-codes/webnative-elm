@@ -1,16 +1,19 @@
-<img src="https://raw.githubusercontent.com/fission-code/kit/ec26048c4cfd3b6ec82e104d87d2c9a8315285ad/images/badge-solid-colored.svg" width="88" />
-
-(There is also `fission-suite/webnative-elm`, but that package is outdated. Use this!)
-
-# Webnative Elm
+<img src="https://webnative.dev/webnative-full.svg" width="230" />
 
 [![Built by FISSION](https://img.shields.io/badge/⌘-Built_by_FISSION-purple.svg)](https://fission.codes)
 [![Discord](https://img.shields.io/discord/478735028319158273.svg)](https://discord.gg/zAQBDEq)
 [![Discourse](https://img.shields.io/discourse/https/talk.fission.codes/topics)](https://talk.fission.codes)
 
-A thin wrapper around [webnative](https://github.com/fission-codes/webnative#readme) for Elm.
+**A thin wrapper around [Webnative](https://github.com/fission-codes/webnative#readme) for Elm.**
 
-> Fission helps developers build and scale their apps. We’re building a web native file system that combines files, encryption, and identity, like an open source iCloud.
+The Webnative SDK empowers developers to build fully distributed web applications without needing a complex back-end. The SDK provides:
+
+- **User accounts** via the browser's [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) or by using a blockchain wallet as a [webnative plugin](https://github.com/fission-codes/webnative-walletauth).
+- **Authorization** using [UCAN](https://ucan.xyz/).
+- **Encrypted file storage** via the [Webnative File System](https://guide.fission.codes/developers/webnative/file-system-wnfs) backed by [IPLD](https://ipld.io/).
+- **Key management** via websockets and a two-factor auth-like flow.
+
+Webnative applications work offline and store data encrypted for the user by leveraging the power of the web platform. You can read more about Webnative in Fission's [Webnative Guide](https://guide.fission.codes/developers/webnative). There's also an API reference which can be found at [webnative.fission.app](https://webnative.fission.app)
 
 
 
@@ -19,76 +22,71 @@ A thin wrapper around [webnative](https://github.com/fission-codes/webnative#rea
 ```shell
 elm install fission-codes/webnative-elm
 
-# requires webnative version 0.24 or later
+# requires webnative version 0.35 or later
 npm install webnative
 npm install webnative-elm
 ```
 
-Setup the necessary ports on your Elm app.
-
-```elm
-port module Ports exposing (..)
-
-import Webnative
-
-port webnativeRequest : Webnative.Request -> Cmd msg
-port webnativeResponse : (Webnative.Response -> msg) -> Sub msg
-
-```
-
-Then import the javascript portion of this library to connect up the ports.
+Then import the javascript portion of this library and elm-taskport.
+We'll need to initialise both of these.
 
 ```js
-import * as webnativeElm from "webnative-elm"
+import * as TaskPort from "elm-taskport"
+import * as WebnativeElm from "webnative-elm"
+
+TaskPort.install()
+WebnativeElm.init({ TaskPort })
 
 // elmApp = Elm.Main.init()
-webnativeElm.setup({ app: elmApp })
 ```
 
-Once we have that setup, we can write our webnative Elm code.
+Once we have that setup, we can write our Webnative Elm code. The following is an entire Webnative app which creates or links a user account, manages user sessions and their file system, and writes to and reads from that file system.
 
 ```elm
-import Webnative exposing (Artifact(..), DecodedResponse(..))
+import Task
+import Webnative
+import Webnative.Auth
+import Webnative.Configuration
+import Webnative.Error exposing (Error)
+import Webnative.FileSystem exposing (Base(..), FileSystem)
+import Webnative.Namespace
 import Webnative.Path as Path
-import Wnfs
+import Webnative.Program exposing (Program)
+import Webnative.Session exposing (Session)
 
 
 -- INIT
 
 
-appPermissions : Webnative.AppPermissions
-appPermissions =
-  { creator = "Fission", name = "Example" }
+appInfo : Webnative.AppInfo
+appInfo =
+  { creator = "Webnative", name = "Example" }
 
 
-permissions : Webnative.Permissions
-permissions =
-  { app = Just appPermissions, fs = Nothing }
+config : Webnative.Configuration
+config =
+  appInfo
+    |> Webnative.Namespace.fromAppInfo
+    |> Webnative.Configuration.fromNamespace
+
+
+type Model
+  = Unprepared
+  | NotAuthenticated Program
+  | Authenticated Program Session FileSystem
 
 
 init : (Model, Cmd Msg)
 init =
-  ( {}
-  , permissions
-      |> Webnative.init
-      |> Ports.webnativeRequest
-      -- 🚀 We'll get a response in the `GotWebnativeResponse` msg
+  ( Unprepared
+  , -- 🚀
+    config
+      |> Webnative.program
+      |> Webnative.attemptTask
+          { ok = Liftoff
+          , err = HandleWebnativeError
+          }
   )
-
-
-
--- FILESYSTEM PREP
-
-
-type Tag
-  = ReadHelloTxt
-  | Mutation
-  | PointerUpdated
-
-
-base : Wnfs.Base
-base =
-  Wnfs.AppData appPermissions
 
 
 
@@ -96,131 +94,114 @@ base =
 
 
 type Msg
-  = GotWebnativeResponse Webnative.Response
-  --
-  | ReadWnfsFile
-  | WriteToWnfsFile
+  = HandleWebnativeError Error
+  | GotFileContents String
+  | GotSession Session
+  | Liftoff Foundation
+  | RegisterUser { success : Bool }
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    GotWebnativeResponse response ->
-      case Webnative.decodeResponse tagFromString response of
-        -----------------------------------------
-        -- 🚀
-        -----------------------------------------
-        Webnative ( Initialisation state ) ->
-          if Webnative.isAuthenticated state then
-            loadUserData
-          else
-            welcome
+    -----------------------------------------
+    -- 🚀
+    -----------------------------------------
+    Liftoff foundation ->
+      let
+        newModel =
+          -- Previous authenticated session?
+          -- Presence of a FileSystem depends on your configuration.
+          case (foundation.fileSystem, foundation.session) of
+            (Just fs, Just session) -> Authenticated program session fs
+            _                       -> NotAuthenticated program
+      in
+      ( newModel
 
-        -----------------------------------------
-        -- 💾
-        -----------------------------------------
-        Wnfs ReadHelloTxt ( Utf8Content helloContents ) ->
-          -- Do something with content from hello.txt
+      -- Next action
+      --------------
+      , case newModel of
+          NotAuthenticated program ->
+            -- Option (A), register a new account.
+            -- We're skipping the username validation and
+            -- username availability checking here to keep it short.
+            { email = Nothing
+            , username = Just "user"
+            }
+            |> Webnative.Auth.register program
+            |> Webnative.attemptTask
+                { ok = RegisterUser
+                , error = HandleWebnativeError
+                }
 
-        Wnfs Mutation _ ->
-          ( model
-          , { tag = PointerUpdated }
-              |> Wnfs.publish
-              |> Ports.webnativeRequest
-          )
+            -- Option (B), link an existing account.
+            -- See 'Linking' section below.
+          
+          _ ->
+            Cmd.none
+      )
 
-        -----------------------------------------
-        -- 🥵
-        -----------------------------------------
-        -- Do something with the errors,
-        -- here we cast them to strings
-        WebnativeError err -> Webnative.error err
-        WnfsError err -> Wnfs.error err
+    -----------------------------------------
+    -- 🙋
+    -----------------------------------------
+    RegisterUser { success } ->
+      if success then
+        ( model
+        , program
+            |> Webnative.Auth.sessionWithFileSystem
+            |> Webnative.attemptTask
+                { ok = RegisterUser
+                , error = HandleWebnativeError
+                }
+        )
+      else
+        -- Could show message in create-account form.
+        (model, Cmd.none)
 
-    --
+    GotSessionAndFileSystem (Just { fileSystem, session }) ->
+      ( -- Authenticated
+        case model of
+          NotAuthenticated program  -> Authenticated program session fileSystem
+          _                         -> model
 
-    ReadWnfsFile ->
-      { path = Path.file [ "hello.txt" ]
-      , tag = tagToString ReadHelloTxt
-      }
-        |> Wnfs.readUtf8 base
-        |> Ports.webnativeRequest
-        |> Tuple.pair model
+      -- Next action
+      --------------
+      , let
+          path =
+            Path.file [ "Sub Directory", "hello.txt" ]
+        in
+        "👋"
+            |> Webnative.FileSystem.writeUtf8 fileSystem Private path
+            |> Task.andThen (\_ -> Webnative.FileSystem.publish fileSystem)
+            |> Task.andThen (\_ -> Webnative.FileSystem.readUtf8 fileSystem Private path)
+            |> Webnative.attemptTask
+                { ok = GotFileContents
+                , error = HandleWebnativeError
+                }
+      )
 
-    WriteToWnfsFile ->
-      "👋"
-        |> Wnfs.writeUtf8 base
-          { path = Path.file [ "hello.txt" ]
-          , tag = tagToString Mutation
-          }
-        |> Ports.webnativeRequest
-        |> Tuple.pair model
+    -----------------------------------------
+    -- 💾
+    -----------------------------------------
+    GotFileContents string -> ...
 
-
-subscriptions : Sub Msg
-subscriptions =
-  Ports.webnativeResponse GotWebnativeResponse
-
-
-
--- TAG ENCODING/DECODING
-
-
-tagToString : Tag -> String
-tagToString tag =
-  case tag of
-    ReadHelloTxt -> "ReadHelloTxt"
-    Mutation -> "Mutation"
-
-
-tagFromString : String -> Result String Tag
-tagFromString string =
-  case string of
-    "ReadHelloTxt" -> Ok ReadHelloTxt
-    "Mutation" -> Ok Mutation
-    _ -> Err "Invalid tag"
+    -----------------------------------------
+    -- 🥵
+    -----------------------------------------
+    HandleWebnativeError UnsupportedBrowser ->        -- No indexedDB? Depends on how Webnative is configured.
+    HandleWebnativeError InsecureContext ->           -- Webnative requires a secure context
+    HandleWebnativeError (JavascriptError string) ->  -- Notification.push ("Got JS error: " ++ string)
 ```
 
 
 
-# What's this tag thing?
+# Linking
 
-You can chain webnative commands in Elm by providing a tag, which is then attached to the response. In the following example I have a custom type for my tags, which I then encode/decode to/from a string.
+When a user has already registered an account, they can link a device instead.
 
 ```elm
-import Webnative exposing (DecodedResponse(..))
-import Webnative.Path as Path
-import Wnfs
-
-type Tag = Mutation | PointerUpdated
-
--- Request
-Wnfs.writeUtf8 base
-  { path = Path.file [ "hello.txt" ]
-  , tag = tagToString Mutation
-  }
-
--- Response
-case Webnative.decodeResponse tagFromString response of
-  Wnfs Mutation _ ->
-    ( model
-    , Ports.webnativeRequest (Wnfs.publish PointerUpdated)
-    )
+-- TODO: Yet to be implemented
 ```
-
-
-
-# API
-
-We don't support all the functions from [webnative](https://github.com/fission-codes/webnative#readme) yet.  
-For now you can do the following from Elm:
-
-- All WNFS interactions
-- Redirect to lobby
-- Leave / Sign out
-
-More coming later.  
-[Let us know](https://talk.fission.codes) if you have any requests.
 
 
 
@@ -230,36 +211,27 @@ Alternatively you can load the filesystem separately.
 You may want to do this when working with a web worker.
 
 ```elm
-import Webnative exposing (defaultInitOptions)
+import Webnative
 
-Webnative.initWithOptions
-  { defaultInitOptions | loadFileSystem = False }
+config =
+  { namespace = ...
+  
+  --
+  , debug = Nothing
+  , fileSystem = Just { loadImmediately = Just True, version = Nothing }
+  , permissions = Nothing
+  }
+
+Webnative.program config
 ```
 
 And then load it either in Elm or in javascript.
 
 ```elm
-Webnative.loadFileSystem permissions
+Webnative.FileSystem.load program { username = "username" }
 ```
 
 ```js
-const fs = await webnative.loadFileSystem(permissions)
-webnativeElm.setup({ app: elmApp, getFs: () => fs })
-```
-
-
-
-# Customisation
-
-There's various customisation options:
-
-```js
-webnativeElm.setup({
-  app: elmApp,
-  portNames: {
-    incoming: "webnativeRequest",
-    outgoing: "webnativeResponse"
-  },
-  webnative: require("webnative")
-})
+const fs = await program.loadFileSystem("username")
+webnativeElm.init({ fileSystems: [ fs ] })
 ```

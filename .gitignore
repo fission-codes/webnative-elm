@@ -1,4 +1,7 @@
-elm-stuff
-node_modules
-tests/commonjs/dist/*.js
-tests/example/dist
+.direnv
+/elm-stuff
+/dist
+/lib
+/node_modules
+/test-envs/commonjs/dist/*.js
+/test-envs/example/dist
