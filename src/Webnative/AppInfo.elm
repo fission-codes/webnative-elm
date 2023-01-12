@@ -1,5 +1,11 @@
 module Webnative.AppInfo exposing (AppInfo, appId, encode)
 
+{-|
+
+@docs AppInfo, appId, encode
+
+-}
+
 import Json.Encode as Json
 
 
@@ -7,6 +13,7 @@ import Json.Encode as Json
 -- 🌳
 
 
+{-| -}
 type alias AppInfo =
     { creator : String, name : String }
 
@@ -15,11 +22,13 @@ type alias AppInfo =
 -- 🛠
 
 
+{-| -}
 appId : AppInfo -> String
 appId { creator, name } =
     creator ++ "/" ++ name
 
 
+{-| -}
 encode : AppInfo -> Json.Value
 encode { creator, name } =
     Json.object

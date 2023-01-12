@@ -1,5 +1,11 @@
 module Webnative.Namespace exposing (Namespace, fromAppInfo, fromString, toString)
 
+{-|
+
+@docs Namespace, fromAppInfo, fromString, toString
+
+-}
+
 import Webnative.AppInfo as AppInfo exposing (AppInfo)
 
 
@@ -7,6 +13,7 @@ import Webnative.AppInfo as AppInfo exposing (AppInfo)
 -- 🌳
 
 
+{-| -}
 type Namespace
     = NsAppInfo AppInfo
     | NsString String
@@ -16,16 +23,19 @@ type Namespace
 -- 🛠
 
 
+{-| -}
 fromAppInfo : AppInfo -> Namespace
 fromAppInfo =
     NsAppInfo
 
 
+{-| -}
 fromString : String -> Namespace
 fromString =
     NsString
 
 
+{-| -}
 toString : Namespace -> String
 toString namespace =
     case namespace of

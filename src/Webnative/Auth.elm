@@ -1,5 +1,11 @@
 module Webnative.Auth exposing (isUsernameAvailable, isUsernameValid, register, session, sessionWithFileSystem)
 
+{-|
+
+@docs isUsernameAvailable, isUsernameValid, register, session, sessionWithFileSystem
+
+-}
+
 import Json.Decode
 import Json.Encode as Json
 import Maybe.Extra as Maybe
@@ -15,6 +21,7 @@ import Webnative.Task exposing (Task)
 -- 🛠
 
 
+{-| -}
 isUsernameAvailable : Program -> String -> Task Bool
 isUsernameAvailable program =
     callTaskPort
@@ -24,6 +31,7 @@ isUsernameAvailable program =
         }
 
 
+{-| -}
 isUsernameValid : Program -> String -> Task Bool
 isUsernameValid program =
     callTaskPort
@@ -33,6 +41,7 @@ isUsernameValid program =
         }
 
 
+{-| -}
 register : Program -> { email : Maybe String, username : String } -> Task { success : Bool }
 register program =
     callTaskPort
@@ -51,6 +60,7 @@ register program =
         }
 
 
+{-| -}
 session : Program -> Task (Maybe Session)
 session =
     callTaskPort
@@ -60,6 +70,7 @@ session =
         }
 
 
+{-| -}
 sessionWithFileSystem : Program -> Task (Maybe { fileSystem : FileSystem, session : Session })
 sessionWithFileSystem program =
     Task.andThen

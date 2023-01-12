@@ -1,5 +1,11 @@
 module Webnative.Session exposing (Session, decoder)
 
+{-|
+
+@docs Session, decoder
+
+-}
+
 import Json.Decode exposing (Decoder)
 
 
@@ -7,6 +13,7 @@ import Json.Decode exposing (Decoder)
 -- 🌳
 
 
+{-| -}
 type alias Session =
     { kind : String
     , username : String
@@ -17,6 +24,7 @@ type alias Session =
 -- 🛠
 
 
+{-| -}
 decoder : Decoder Session
 decoder =
     Json.Decode.map2

@@ -1,8 +1,14 @@
-module Webnative exposing (..)
+module Webnative exposing (Foundation, program, attemptTask)
+
+{-|
+
+@docs Foundation, program, attemptTask
+
+-}
 
 import Json.Decode
-import Json.Encode as Json
 import Webnative.Configuration as Configuration exposing (Configuration)
+import Webnative.Error as Webnative
 import Webnative.FileSystem as FileSystem exposing (FileSystem)
 import Webnative.Internal exposing (callTaskPort)
 import Webnative.Program as Program exposing (Program)
@@ -14,6 +20,7 @@ import Webnative.Task as Webnative
 -- 🚀
 
 
+{-| -}
 type alias Foundation =
     { fileSystem : Maybe FileSystem
     , program : Program
@@ -21,6 +28,7 @@ type alias Foundation =
     }
 
 
+{-| -}
 program : Configuration -> Webnative.Task Foundation
 program =
     callTaskPort
@@ -42,5 +50,6 @@ program =
 
 {-| Alias for `Webnative.Task.attempt`.
 -}
+attemptTask : { error : Webnative.Error -> msg, ok : value -> msg } -> Webnative.Task value -> Cmd msg
 attemptTask =
     Webnative.attempt

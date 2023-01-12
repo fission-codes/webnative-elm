@@ -1,5 +1,11 @@
 module Webnative.Permissions exposing (BranchFileSystemPermissions, FileSystemPermissions, Permissions, encode, encodeFileSystemPermissions, flattenPermissions)
 
+{-|
+
+@docs BranchFileSystemPermissions, FileSystemPermissions, Permissions, encode, encodeFileSystemPermissions, flattenPermissions
+
+-}
+
 import Json.Encode as Json
 import Maybe.Extra as Maybe
 import Webnative.AppInfo as AppInfo exposing (AppInfo)
@@ -57,6 +63,7 @@ type alias Permissions =
 -- 🛠
 
 
+{-| -}
 encode : Permissions -> Json.Value
 encode { app, fs } =
     Json.object
@@ -65,6 +72,7 @@ encode { app, fs } =
         ]
 
 
+{-| -}
 encodeFileSystemPermissions : FileSystemPermissions -> Json.Value
 encodeFileSystemPermissions { private, public } =
     let
@@ -79,6 +87,7 @@ encodeFileSystemPermissions { private, public } =
         ]
 
 
+{-| -}
 flattenPermissions : Permissions -> Maybe Permissions
 flattenPermissions permissions =
     case ( permissions.app, permissions.fs ) of

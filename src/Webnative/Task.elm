@@ -1,5 +1,11 @@
 module Webnative.Task exposing (Task, attempt)
 
+{-|
+
+@docs Task, attempt
+
+-}
+
 import Task
 import Webnative.Error as Webnative
 
@@ -8,6 +14,7 @@ import Webnative.Error as Webnative
 -- 🌳
 
 
+{-| -}
 type alias Task a =
     Task.Task Webnative.Error a
 
@@ -16,6 +23,7 @@ type alias Task a =
 -- 🛠
 
 
+{-| -}
 attempt : { error : Webnative.Error -> msg, ok : value -> msg } -> Task value -> Cmd msg
 attempt { error, ok } =
     Task.attempt

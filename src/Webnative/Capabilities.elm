@@ -1,5 +1,11 @@
 module Webnative.Capabilities exposing (collect, request, session)
 
+{-|
+
+@docs collect, request, session
+
+-}
+
 import Json.Decode
 import TaskPort
 import Webnative.Internal exposing (callTaskPort)
@@ -12,6 +18,7 @@ import Webnative.Task exposing (Task)
 -- 🛠
 
 
+{-| -}
 collect : Program -> Task { username : Maybe String }
 collect =
     callTaskPort
@@ -25,6 +32,7 @@ collect =
         }
 
 
+{-| -}
 request : Program -> Task ()
 request =
     callTaskPort
@@ -34,6 +42,7 @@ request =
         }
 
 
+{-| -}
 session : Program -> Task (Maybe Session)
 session =
     callTaskPort

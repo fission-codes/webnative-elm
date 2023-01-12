@@ -1,4 +1,13 @@
-module Webnative.FileSystem exposing (AssociatedIdentity, Base(..), Entry, FileSystem, acceptShare, account, add, cat, deactivate, decoder, directoryEntriesDecoder, encode, exists, historyStep, load, ls, mkdir, mv, publish, read, readUtf8, ref, rm, sharePrivate, symlink, withRef, withRefSplat, write, writeUtf8)
+module Webnative.FileSystem exposing
+    ( AssociatedIdentity, Entry, FileSystem, acceptShare, account, add, cat, deactivate, decoder, directoryEntriesDecoder, encode, exists, historyStep, load, ls, mkdir, mv, publish, read, readUtf8, ref, rm, sharePrivate, symlink, withRef, withRefSplat, write, writeUtf8
+    , Base(..)
+    )
+
+{-|
+
+@docs AssociatedIdentity, Base, Entry, FileSystem, acceptShare, account, add, cat, deactivate, decoder, directoryEntriesDecoder, encode, exists, historyStep, load, ls, mkdir, mv, publish, read, readUtf8, ref, rm, sharePrivate, symlink, withRef, withRefSplat, write, writeUtf8
+
+-}
 
 import Bytes exposing (Bytes)
 import Bytes.Encode
@@ -18,6 +27,7 @@ import Webnative.Task exposing (Task)
 -- 🌳
 
 
+{-| -}
 type FileSystem
     = FileSystemReference String
 
@@ -30,6 +40,7 @@ type Base
     | Public
 
 
+{-| -}
 type alias AssociatedIdentity =
     { rootDID : String
     , username : Maybe String
@@ -50,6 +61,7 @@ type alias Entry =
 -- LOADING
 
 
+{-| -}
 load : Program.Program -> { username : String } -> Task FileSystem
 load program =
     callTaskPort
@@ -63,6 +75,7 @@ load program =
 -- POSIX
 
 
+{-| -}
 acceptShare : FileSystem -> { shareId : String, sharedBy : String } -> Task ()
 acceptShare fs { shareId, sharedBy } =
     callTaskPort
@@ -75,6 +88,7 @@ acceptShare fs { shareId, sharedBy } =
         ]
 
 
+{-| -}
 account : FileSystem -> Task AssociatedIdentity
 account =
     callTaskPort
@@ -88,6 +102,7 @@ account =
         }
 
 
+{-| -}
 add : FileSystem -> Base -> Path File -> Bytes -> Task ()
 add fs base path content =
     callTaskPort
@@ -100,6 +115,7 @@ add fs base path content =
         ]
 
 
+{-| -}
 cat : FileSystem -> Base -> Path File -> Task Bytes
 cat fs base =
     callTaskPort
@@ -109,6 +125,7 @@ cat fs base =
         }
 
 
+{-| -}
 deactivate : FileSystem -> Task ()
 deactivate =
     callTaskPort
@@ -118,6 +135,7 @@ deactivate =
         }
 
 
+{-| -}
 exists : FileSystem -> Base -> Path File -> Task Bool
 exists fs base =
     callTaskPort
@@ -127,6 +145,7 @@ exists fs base =
         }
 
 
+{-| -}
 historyStep : FileSystem -> Task ()
 historyStep =
     callTaskPort
@@ -136,6 +155,7 @@ historyStep =
         }
 
 
+{-| -}
 ls : FileSystem -> Base -> Path Directory -> Task (List Entry)
 ls fs base =
     callTaskPort
@@ -145,6 +165,7 @@ ls fs base =
         }
 
 
+{-| -}
 mkdir : FileSystem -> Base -> Path Directory -> Task ()
 mkdir fs base =
     callTaskPort
@@ -154,6 +175,7 @@ mkdir fs base =
         }
 
 
+{-| -}
 mv : FileSystem -> Base -> { from : Path k, to : Path k } -> Task ()
 mv fs base { from, to } =
     callTaskPort
@@ -166,6 +188,7 @@ mv fs base { from, to } =
         ]
 
 
+{-| -}
 publish : FileSystem -> Task CID
 publish =
     callTaskPort
@@ -175,6 +198,7 @@ publish =
         }
 
 
+{-| -}
 read : FileSystem -> Base -> Path File -> Task Bytes
 read fs base =
     callTaskPort
@@ -184,6 +208,7 @@ read fs base =
         }
 
 
+{-| -}
 readUtf8 : FileSystem -> Base -> Path File -> Task String
 readUtf8 fs base =
     callTaskPort
@@ -193,6 +218,7 @@ readUtf8 fs base =
         }
 
 
+{-| -}
 rm : FileSystem -> Base -> Path k -> Task ()
 rm fs base =
     callTaskPort
@@ -202,6 +228,7 @@ rm fs base =
         }
 
 
+{-| -}
 sharePrivate : FileSystem -> List (Path k) -> { shareWith : List String } -> Task ()
 sharePrivate fs paths { shareWith } =
     callTaskPort
@@ -214,6 +241,7 @@ sharePrivate fs paths { shareWith } =
         ]
 
 
+{-| -}
 symlink : FileSystem -> Base -> { at : Path Directory, name : String, referringTo : Path k } -> Task ()
 symlink fs base { at, name, referringTo } =
     callTaskPort
@@ -227,6 +255,7 @@ symlink fs base { at, name, referringTo } =
         ]
 
 
+{-| -}
 write : FileSystem -> Base -> Path File -> Bytes -> Task ()
 write fs base path content =
     callTaskPort
@@ -239,6 +268,7 @@ write fs base path content =
         ]
 
 
+{-| -}
 writeUtf8 : FileSystem -> Base -> Path File -> String -> Task ()
 writeUtf8 fs base path content =
     callTaskPort
@@ -255,12 +285,14 @@ writeUtf8 fs base path content =
 -- REFERENCE
 
 
+{-| -}
 ref : FileSystem -> Json.Value
 ref fileSystem =
     Json.object
         [ ( "fileSystemRef", encode fileSystem ) ]
 
 
+{-| -}
 withRef : FileSystem -> Json.Value -> Json.Value
 withRef fileSystem arg =
     Json.object
@@ -269,6 +301,7 @@ withRef fileSystem arg =
         ]
 
 
+{-| -}
 withRefSplat : FileSystem -> Json.Value -> Json.Value
 withRefSplat fileSystem arg =
     Json.object
@@ -282,11 +315,13 @@ withRefSplat fileSystem arg =
 -- 🛠
 
 
+{-| -}
 decoder : Decoder FileSystem
 decoder =
     Json.Decode.map FileSystemReference Json.Decode.string
 
 
+{-| -}
 directoryEntriesDecoder : Decoder (List Entry)
 directoryEntriesDecoder =
     Json.Decode.map3
@@ -324,6 +359,7 @@ directoryEntriesDecoder =
             )
 
 
+{-| -}
 encode : FileSystem -> Json.Value
 encode (FileSystemReference r) =
     Json.string r

@@ -1,4 +1,13 @@
-module Webnative.Error exposing (Error(..), decoder, fromString, fromTaskPort)
+module Webnative.Error exposing
+    ( decoder, fromString, fromTaskPort
+    , Error(..)
+    )
+
+{-|
+
+@docs Error, decoder, fromString, fromTaskPort
+
+-}
 
 import Json.Decode exposing (Decoder)
 import TaskPort
@@ -8,6 +17,7 @@ import TaskPort
 -- 🌳
 
 
+{-| -}
 type Error
     = InsecureContext
     | JavascriptError String
@@ -18,6 +28,7 @@ type Error
 -- 🛠
 
 
+{-| -}
 decoder : Decoder Error
 decoder =
     Json.Decode.map
@@ -25,6 +36,7 @@ decoder =
         Json.Decode.string
 
 
+{-| -}
 fromString : String -> Error
 fromString string =
     case string of
@@ -38,6 +50,7 @@ fromString string =
             JavascriptError string
 
 
+{-| -}
 fromTaskPort : TaskPort.Error -> Error
 fromTaskPort error =
     case error of

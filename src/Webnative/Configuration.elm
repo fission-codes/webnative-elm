@@ -1,5 +1,11 @@
 module Webnative.Configuration exposing (Configuration, FileSystemConfiguration, encode, encodeFileSystemConfiguration, fromNamespace)
 
+{-|
+
+@docs Configuration, FileSystemConfiguration, encode, encodeFileSystemConfiguration, fromNamespace
+
+-}
+
 import Json.Encode as Json
 import Maybe.Extra as Maybe
 import Webnative.Namespace as Namespace exposing (Namespace)
@@ -10,6 +16,7 @@ import Webnative.Permissions as Permissions exposing (Permissions)
 -- 🌳
 
 
+{-| -}
 type alias Configuration =
     { namespace : Namespace
 
@@ -20,6 +27,7 @@ type alias Configuration =
     }
 
 
+{-| -}
 type alias FileSystemConfiguration =
     { loadImmediately : Maybe Bool
     , version : Maybe String
@@ -30,6 +38,7 @@ type alias FileSystemConfiguration =
 -- 🛠
 
 
+{-| -}
 encode : Configuration -> Json.Value
 encode { namespace, debug, permissions, fileSystem } =
     Json.object
@@ -42,6 +51,7 @@ encode { namespace, debug, permissions, fileSystem } =
         ]
 
 
+{-| -}
 encodeFileSystemConfiguration : FileSystemConfiguration -> Json.Value
 encodeFileSystemConfiguration { loadImmediately, version } =
     Json.object
@@ -50,6 +60,7 @@ encodeFileSystemConfiguration { loadImmediately, version } =
         ]
 
 
+{-| -}
 fromNamespace : Namespace -> Configuration
 fromNamespace namespace =
     { namespace = namespace
