@@ -1,5 +1,10 @@
 # Changelog
 
+### 8.0.0
+
+Complete rewrite for Webnative v0.35
+
+
 ### 7.0.0
 
 - **Elm**: Fixes issue with decoding the response of `Webnative.leave` and `Webnative.signOut`.
