@@ -1,6 +1,6 @@
 # Changelog
 
-### 8.0.0
+### 2.0.0 Elm / 8.0.0 NPM
 
 Complete rewrite for Webnative v0.35
 
