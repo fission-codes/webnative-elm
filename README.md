@@ -22,7 +22,7 @@ Webnative applications work offline and store data encrypted for the user by lev
 ```shell
 elm install fission-codes/webnative-elm
 
-# requires webnative version 0.35 or later
+# requires webnative version 0.36 or later
 npm install webnative
 npm install webnative-elm
 ```
