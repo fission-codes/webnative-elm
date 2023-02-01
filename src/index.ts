@@ -1,7 +1,7 @@
 import * as Webnative from "webnative"
 import { Maybe } from "webnative"
 import { hasProp } from "webnative/common/index"
-import { DistinctivePath } from "webnative/path/index"
+import { DistinctivePath, Partition, PartitionedNonEmpty } from "webnative/path/index"
 
 
 export type Reference = string
@@ -11,7 +11,7 @@ export type Reference = string
  * Create TaskPort namespace.
  */
 export function createTaskPortNamespace(TaskPort) {
-  return TaskPort.createNamespace("fission-codes/webnative", "8.0.0")
+  return TaskPort.createNamespace("fission-codes/webnative", "8.1.0")
 }
 
 
@@ -52,8 +52,6 @@ export function init(options: {
 
   ns.register("fileSystem_acceptShare", withFs(f => f.acceptShare))
   ns.register("fileSystem_account", withFs(f => f.account))
-  ns.register("fileSystem_add", withFs(addToFileSystem))
-  ns.register("fileSystem_cat", withFs(f => f.cat))
   ns.register("fileSystem_deactivate", withFs(f => f.deactivate))
   ns.register("fileSystem_exists", withFs(f => f.exists))
   ns.register("fileSystem_get", withFs(f => f.get))
@@ -79,7 +77,7 @@ export function init(options: {
 
 
 function addToFileSystem(fs: Webnative.FileSystem) {
-  return (path: DistinctivePath, bytes: number[]) => fs.add(
+  return (path: DistinctivePath<PartitionedNonEmpty<Partition>>, bytes: number[]) => fs.write(
     path, Uint8Array.from(bytes)
   )
 }
@@ -114,7 +112,7 @@ async function loadFileSystem(
   program: Webnative.Program,
   username: string
 ) {
-  const fs = await program.loadFileSystem(username)
+  const fs = await program.fileSystem.load(username)
   const fsRef = fileSystemRef(fs)
   fileSystems[ fsRef ] = fs
   return fsRef

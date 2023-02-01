@@ -19,7 +19,7 @@ import Webnative.Error as Error exposing (Error)
 
 qualifiedTaskPortFunctionName : TaskPort.FunctionName -> TaskPort.QualifiedName
 qualifiedTaskPortFunctionName =
-    TaskPort.inNamespace "fission-codes/webnative" "8.0.0"
+    TaskPort.inNamespace "fission-codes/webnative" "8.1.0"
 
 
 

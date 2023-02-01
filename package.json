@@ -1,7 +1,7 @@
 {
   "name": "webnative-elm",
   "description": "Thin wrapper around webnative for Elm",
-  "version": "8.0.0",
+  "version": "8.1.0",
   "author": "Steven Vandevelde <icid.asset@gmail.com>",
   "type": "module",
   "main": "lib/index.js",
@@ -40,7 +40,7 @@
   },
   "peerDependencies": {
     "elm-taskport": ">=0.2.0",
-    "webnative": ">=0.35.0"
+    "webnative": ">0.35.0"
   },
   "devDependencies": {
     "elm-taskport": "^2.0.1",
@@ -48,7 +48,7 @@
     "events": "^3.3.0",
     "rimraf": "^3.0.2",
     "typescript": "^4.9.3",
-    "webnative": "^0.35.0"
+    "webnative": "^0.36.0-alpha-3"
   },
   "files": [
     "dist",

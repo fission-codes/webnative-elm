@@ -1,11 +1,8 @@
-module Webnative.FileSystem exposing
-    ( AssociatedIdentity, Entry, FileSystem, acceptShare, account, add, cat, deactivate, decoder, directoryEntriesDecoder, encode, exists, historyStep, load, ls, mkdir, mv, publish, read, readUtf8, ref, rm, sharePrivate, symlink, withRef, withRefSplat, write, writeUtf8
-    , Base(..)
-    )
+module Webnative.FileSystem exposing (AssociatedIdentity, Base(..), Entry, FileSystem, acceptShare, account, deactivate, decoder, directoryEntriesDecoder, encode, exists, historyStep, load, ls, mkdir, mv, publish, read, readUtf8, ref, rm, sharePrivate, symlink, withRef, withRefSplat, write, writeUtf8)
 
 {-|
 
-@docs AssociatedIdentity, Base, Entry, FileSystem, acceptShare, account, add, cat, deactivate, decoder, directoryEntriesDecoder, encode, exists, historyStep, load, ls, mkdir, mv, publish, read, readUtf8, ref, rm, sharePrivate, symlink, withRef, withRefSplat, write, writeUtf8
+@docs AssociatedIdentity, Base, Entry, FileSystem, acceptShare, account, deactivate, decoder, directoryEntriesDecoder, encode, exists, historyStep, load, ls, mkdir, mv, publish, read, readUtf8, ref, rm, sharePrivate, symlink, withRef, withRefSplat, write, writeUtf8
 
 -}
 
@@ -99,29 +96,6 @@ account =
                 (Json.Decode.field "rootDID" Json.Decode.string)
                 (Json.Decode.maybe <| Json.Decode.field "username" Json.Decode.string)
         , argsEncoder = ref
-        }
-
-
-{-| -}
-add : FileSystem -> Base -> Path File -> Bytes -> Task ()
-add fs base path content =
-    callTaskPort
-        { function = "fileSystem_add"
-        , valueDecoder = TaskPort.ignoreValue
-        , argsEncoder = Json.list identity >> withRefSplat fs
-        }
-        [ encodePath base path
-        , encodeBytes content
-        ]
-
-
-{-| -}
-cat : FileSystem -> Base -> Path File -> Task Bytes
-cat fs base =
-    callTaskPort
-        { function = "fileSystem_cat"
-        , valueDecoder = fileContentDecoder
-        , argsEncoder = encodePath base >> withRef fs
         }
 
 

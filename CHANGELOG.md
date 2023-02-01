@@ -1,8 +1,18 @@
 # Changelog
 
+### 3.0.0 Elm / 8.1.0 NPM
+
+- Removed `Webnative.FileSystem.add`
+- Removed `Webnative.FileSystem.cat`
+- Updated to Webnative v0.36
+
+
 ### 2.0.0 Elm / 8.0.0 NPM
 
 Complete rewrite for Webnative v0.35
+
+
+---
 
 
 ### 7.0.0
